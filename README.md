@@ -20,4 +20,5 @@ The following must the installed:
 ## License
 
 Copyright © Michiel Borkent and Rahul De
+
 License: [MIT](https://opensource.org/license/mit). See LICENSE.
