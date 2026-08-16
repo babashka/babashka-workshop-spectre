@@ -1,0 +1,13 @@
+{:paths ["src" "test"]
+ :deps {de.timokramer/charm.clj {:mvn/version "0.2.73"}}
+ :tasks
+ {test {:doc "Run tests"
+        :extra-paths ["test"]
+        :extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
+        :task (exec 'cognitect.test-runner.api/test)
+        :exec-args {:dirs ["test"]}}
+  pw {:exec-fn spectre.cli/generate}
+  tui {:doc "Browse and edit sites in db.edn"
+       :exec-fn spectre.tui/browse}
+  tui2 {:doc "Same as tui, built on charm.clj"
+        :exec-fn spectre.tui2/browse}}}
