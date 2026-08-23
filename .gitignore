@@ -1,4 +1,5 @@
 .nrepl-port
-.lsp
-.clj-kondo
+.lsp/.cache
+.clj-kondo/.cache
+.clj-kondo/imports
 db.edn

@@ -3,6 +3,7 @@
   (:refer-clojure :exclude [derive])
   (:require
    [clojure.string :as str]
+   #_[spectre.scrypt-ffi :as scrypt]
    [spectre.scrypt :as scrypt])
   (:import
    [java.io ByteArrayOutputStream]
