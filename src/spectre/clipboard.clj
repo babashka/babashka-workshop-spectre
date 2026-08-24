@@ -19,6 +19,6 @@
   "Copy s to the clipboard with cmd, by default the first available tool.
    Returns the command used, or nil when there is none.
   The value goes over stdin."
-  ([s])) ;; TODO
+  [s]) ;; TODO
 
 (comment (copy! "foo"))

@@ -3,7 +3,7 @@
   (:refer-clojure :exclude [derive])
   (:require
    [clojure.string :as str]
-   #_[spectre.scrypt-ffi :as scrypt]
+   ; [spectre.scrypt-ffi :as scrypt]
    [spectre.scrypt :as scrypt])
   (:import
    [java.io ByteArrayOutputStream]
@@ -46,10 +46,12 @@
 
 (defn- u32
   "Four-byte big-endian unsigned int."
-  ^bytes [n]
+  [n]
   (.array (.putInt (ByteBuffer/allocate 4) (int n))))
 
-(defn- utf8 ^bytes [s] (.getBytes ^String s "UTF-8"))
+(defn- utf8
+  [s]
+  (.getBytes ^String s "UTF-8"))
 
 (defn- cat-bytes ^bytes [& arrs]
   (let [out (ByteArrayOutputStream.)]
@@ -58,18 +60,21 @@
 
 (defn- ub
   "Byte as unsigned 0-255."
-  [^bytes b i]
+  [b i]
   (bit-and (aget b i) 0xff))
 
 (defn master-key
   "Derive the 64-byte master key from full name and master password."
-  (^bytes [full-name master-password] (master-key full-name master-password :password))
-  (^bytes [full-name master-password variant]
+  ([full-name master-password]
+   (master-key full-name master-password :password))
+  ([full-name master-password variant]
    (let [name-bytes (utf8 full-name)
          salt (cat-bytes (utf8 (scope variant)) (u32 (alength name-bytes)) name-bytes)]
+     ;; NOTE: Argon2 is the more modern recommended KDF and you can try that out as Spectre v4!
      (scrypt/scrypt (utf8 master-password) salt 32768 8 2 64))))
 
-(defn- site-seed ^bytes [^bytes mkey site counter variant]
+(defn- site-seed
+  [mkey site counter variant]
   (let [site-bytes (utf8 site)
         msg (cat-bytes (utf8 (scope variant)) (u32 (alength site-bytes)) site-bytes (u32 counter))
         mac (doto (Mac/getInstance "HmacSHA256")
@@ -79,7 +84,8 @@
 (defn derive
   "Derive a password for a site from the master key.
    variant: :password :login :answer. tmpl: a template class keyword."
-  ([mkey site] (derive mkey site {}))
+  ([mkey site]
+   (derive mkey site {}))
   ([mkey site {:keys [counter variant template]
                :or {counter 1 variant :password template :long}}]
    (let [seed (site-seed mkey site counter variant)
@@ -98,6 +104,9 @@
   (derive (master-key full-name master-password (:variant opts :password)) site opts))
 
 (comment
-  (def my-pass (password "John Doe" "hunter2" "example.com" {:variant :password :template :long}))
+  (def my-pass (password "John Doe"
+                         "correct horse battery staple"
+                         "example.com"
+                         {:variant :password :template :maximum}))
 
-  (assert (= "HuqoBoquSeyn1'" my-pass)))
+  (assert (= "b0+aejObRu&7LB&Y#j%h" my-pass)))

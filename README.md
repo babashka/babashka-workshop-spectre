@@ -11,13 +11,14 @@ This is a workshop which uses Babashka to implement a password manager CLI which
 
 The following must the installed:
 
-- [Babashka](https://github.com/babashka/babashka#installation) (latest version preferred).
+- [Babashka](https://github.com/babashka/babashka#installation) (latest version preferred, ideally with FFI support).
 - Java 17+ (latest preferred).
 - Optional: Clojure [CLI](https://clojure.org/guides/install_clojure)
-- OpenSSL 3+
+- OpenSSL 3+: If not using the FFI version below.
   - Linux: Install the latest using your favourite package manager.
   - Mac: `brew install openssl` this MUST be used as the inbuilt one is not compatible.
   - Windows 10+: `winget install openssl`
+- [libsodium](https://libsodium.gitbook.io/doc/installation): For FFI based implementation.
 
 ### Editor setup
 

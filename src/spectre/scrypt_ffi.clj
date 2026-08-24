@@ -13,7 +13,8 @@
   [:pointer :size_t :pointer :size_t :ulong :uint32 :uint32 :pointer :size_t] :int)
 
 (defonce ^:private _init
-  (do @sodium (assert (zero? (sodium-init)) "sodium_init failed")))
+  (do @sodium
+      (assert (zero? (sodium-init)) "sodium_init failed")))
 
 (defn- bytes->ptr
   [b]
