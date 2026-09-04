@@ -4,14 +4,14 @@
  {test {:doc "Run tests. `bb test :nses spectre.cli-test` runs one exercise"
         :extra-paths ["test"]
         :extra-deps {io.github.cognitect-labs/test-runner {:git/tag "v0.5.1" :git/sha "dfb30dd"}}
-        :task (exec 'cognitect.test-runner.api/test)
+        :exec-fn cognitect.test-runner.api/test
         :exec-args {:dirs ["test"]}
-        :org.babashka/cli {:coerce {:dirs [:string]
-                                    :nses [:symbol]
-                                    :patterns [:string]
-                                    :vars [:symbol]
-                                    :includes [:keyword]
-                                    :excludes [:keyword]}}}
+        :cli {:coerce {:dirs [:string]
+                       :nses [:symbol]
+                       :patterns [:string]
+                       :vars [:symbol]
+                       :includes [:keyword]
+                       :excludes [:keyword]}}}
   pw {:exec-fn spectre.cli/generate}
   tui {:doc "Browse and edit sites in db.edn"
        :exec-fn spectre.tui/browse}
