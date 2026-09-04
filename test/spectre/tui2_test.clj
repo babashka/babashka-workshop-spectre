@@ -1,0 +1,58 @@
+(ns spectre.tui2-test
+  (:require
+   [charm.components.list :as item-list]
+   [charm.message :as msg]
+   [clojure.test :refer [deftest is testing]]
+   [spectre.tui2 :as tui2]))
+
+(def ^:private db
+  {:sites {"google.com" {:counter 1 :template :maximum :variant :password}
+           "mail.google.com" {:counter 2 :template :long :variant :login}
+           "example.org" {:counter 1 :template :long :variant :password}}})
+
+(defn- press [state k]
+  (first (tui2/update-fn state (msg/key-press k))))
+
+(defn- titles [state]
+  (mapv :site (item-list/items (:list state))))
+
+(defn- start []
+  (first (tui2/update-fn (tui2/state db) (msg/window-size 80 24))))
+
+(deftest search-test
+  (testing "typing filters the list, backspace widens it again"
+    (let [s (reduce press (start) ["g" "o"])]
+      (is (= ["google.com" "mail.google.com"] (titles s)))
+      (is (= 3 (count (titles (press s :backspace)))))))
+  (testing "the window size sets the list height"
+    (is (= 20 (:height (:list (start))))))
+  (testing "arrow keys move the list cursor"
+    (is (= 1 (item-list/selected-index (:list (press (start) :down)))))
+    (is (= 0 (item-list/selected-index (:list (press (start) :up))))))
+  (testing "letters bound by the list go to the search field, not the cursor"
+    ;; the list binds g to go-to-start: here it has to end up in the query
+    (let [s (-> (start) (press :down) (press "g"))]
+      (is (= ["google.com" "mail.google.com" "example.org"] (titles s)))
+      (is (= 1 (item-list/selected-index (:list s)))))))
+
+(deftest edit-test
+  (let [editing (-> (start) (press "g") (press :enter))]
+    (testing "enter opens the selected site with its stored settings"
+      (is (= :edit (:mode editing)))
+      (is (= "google.com" (:site editing)))
+      (is (= {:counter 1 :template :maximum :variant :password} (:draft editing))))
+    (testing "left and right change the selected field"
+      (is (= 2 (:counter (:draft (press editing :right)))))
+      (is (= :long (:template (:draft (-> editing (press :down) (press :right)))))))
+    (testing "the counter does not go below 1"
+      (is (= 1 (:counter (:draft (-> editing (press :left) (press :left)))))))
+    (testing "values wrap around"
+      (is (= :answer (:variant (:draft (-> editing (press :down) (press :down) (press :left)))))))
+    (testing "escape goes back to the search screen"
+      (is (= :search (:mode (-> editing (press :right) (press :escape))))))))
+
+(deftest view-test
+  (testing "both screens render without blowing up"
+    (let [s (reduce press (start) ["g" "o"])]
+      (is (string? (tui2/view s)))
+      (is (string? (tui2/view (press s :enter)))))))
