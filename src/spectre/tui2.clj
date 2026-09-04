@@ -1,10 +1,5 @@
 (ns spectre.tui2
-  "The same site browser as `spectre.tui`, built on charm.clj.
-
-  Deliberately a second, self-contained implementation: `spectre.tui` drives
-  JLine directly (read a key, redraw the screen), this one is the Elm
-  architecture - state, update, view - with charm's text-input and list
-  components doing the editing and scrolling."
+  "Browse and edit site settings in a terminal UI."
   (:require
    [charm.components.help :as help]
    [charm.components.list :as item-list]
@@ -30,18 +25,17 @@
 (def ^:private search-help
   (help/from-pairs
    "type" "filter"
-   "↑/↓" "move"
+   "up/down" "move"
    "enter" "edit"
    "esc" "quit"))
 
 (def ^:private edit-help
   (help/from-pairs
-   "↑/↓" "field"
-   "←/→" "change"
+   "up/down" "field"
+   "left/right" "change"
    "enter" "save"
    "esc" "back"))
 
-;; Search prompt, hit count, blank line, help line
 (def ^:private chrome-height 4)
 
 (defn- list-height [term-height]
@@ -99,7 +93,7 @@
   (some #(msg/key-match? m %) [:up :down :page-up :page-down]))
 
 (defn- open-selected
-  "Open the selected site for editing, its stored settings as the draft."
+  "Open the selected site and load its settings into the draft."
   [state]
   state) ;; TODO
 

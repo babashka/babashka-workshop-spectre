@@ -1,40 +1,41 @@
 # Babashka Workshop - Spectre
 
-This is a workshop which uses Babashka to implement a password manager CLI which:
+This workshop uses Babashka to build a password manager CLI with:
 
-- Implements the stateless password algorithm [Spectre](https://spectre.app/). More details [here](https://spectre.app/spectre-algorithm.pdf).
-- Has nicer UX of saving the site metadata locally which can be handled via an intuitive TUI.
-- Has an ergonomic CLI.
-- Fast enough and extensible.
+- The stateless [Spectre password algorithm](https://spectre.app/). See the [algorithm description](https://spectre.app/spectre-algorithm.pdf).
+- Local storage for site settings, with a terminal UI for editing them.
+- A command-line interface for generating passwords.
+- Babashka extensions for native scrypt implementations.
 
-## Prerequsites
+## Prerequisites
 
-The following must the installed:
+Install the following:
 
-- [Babashka](https://github.com/babashka/babashka#installation) (latest version preferred, ideally with FFI support).
-- Java 17+ (latest preferred).
-- Optional: Clojure [CLI](https://clojure.org/guides/install_clojure)
-- OpenSSL 3+: If not using the FFI version below.
-  - Linux: Install the latest using your favourite package manager.
-  - Mac: `brew install openssl` this MUST be used as the inbuilt one is not compatible.
-  - Windows 10+: `winget install openssl`
-- [libsodium](https://libsodium.gitbook.io/doc/installation): For FFI based implementation.
+- [Babashka](https://github.com/babashka/babashka#installation), with FFI support if you want to use the libsodium implementation.
+- Java 17 or later.
+- [Clojure CLI](https://clojure.org/guides/install_clojure) (optional).
+- OpenSSL 3 or later, unless you use the FFI implementation.
+- [libsodium](https://libsodium.gitbook.io/doc/installation) for the FFI implementation.
+
+On macOS, install OpenSSL with `brew install openssl`. The system OpenSSL version is not compatible.
+
+On Windows 10 or later, install OpenSSL with `winget install openssl`.
 
 ### Editor setup
 
-To have the optimal dev experience we recommend the following to be setup
+For editor support, install:
 
 - Clojure [LSP](https://clojure-lsp.io/installation/)
-- Some form of structural editing mode like Paredit or Parinfer.
+- A structural editing mode such as Paredit or Parinfer.
 - Neovim: https://github.com/Olical/conjure
 - Emacs: https://docs.cider.mx/cider/index.html
 - IntelliJ IDEA: https://cursive-ide.com/
 - VSCode/Codium: https://calva.io/
-- Vim: https://github.com/liquidz/elin (Also written in babashka!)
+- Vim: https://github.com/liquidz/elin
 - Sublime Text 4: https://github.com/tonsky/Clojure-Sublimed
 
 ## License
 
-Copyright © Michiel Borkent and Rahul De
+Copyright (c) Michiel Borkent and Rahul De
 
 License: [MIT](https://opensource.org/license/mit). See LICENSE.
