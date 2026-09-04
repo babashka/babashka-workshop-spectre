@@ -17,8 +17,9 @@
 
 (defn copy!
   "Copy s to the clipboard with cmd, by default the first available tool.
-   Returns the command used, or nil when there is none.
-  The value goes over stdin."
-  [s]) ;; TODO
+   Returns the command used, or nil when there is none. The value goes over
+   stdin, never argv."
+  ([s] (copy! s (tool)))
+  ([s cmd])) ;; TODO
 
 (comment (copy! "foo"))
