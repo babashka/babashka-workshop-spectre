@@ -5,17 +5,20 @@
    [clojure.edn :as edn]
    [clojure.pprint :as pp]))
 
-(def path "db.edn")
+(def default-path "db.edn")
 
 (defn load-db
-  []) ;; TODO
+  ([] (load-db {}))
+  ([{:keys [path] :or {path default-path}}])) ;; TODO
 
 (defn save-db!
-  [db]) ;; TODO
+  ([db] (save-db! db {}))
+  ([db {:keys [path] :or {path default-path}}])) ;; TODO
 
 (defn site-settings
   [db site]) ;; TODO
 
 (defn merge-site!
   "Merge settings into the site entry and save. Returns the updated db."
-  [db site settings]) ;; TODO
+  ([db site settings] (merge-site! db site settings {}))
+  ([db site settings opts])) ;; TODO
