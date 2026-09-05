@@ -4,6 +4,7 @@
    [spectre.clipboard :as clipboard]
    [spectre.core :as spectre]
    [spectre.db :as db]
+   [spectre.identicon :as identicon]
    [spectre.term :as term]))
 
 (def defaults {:counter 1 :template :long :variant :password})
@@ -47,6 +48,9 @@
         effective (site-opts site explicit)
         full-name (or (:name opts) (System/getenv "SPECTRE_NAME") (term/input "Full name: "))
         master (or (System/getenv "SPECTRE_MASTER") (term/password "Master password: "))
+        ;; the same name and master password always draw the same figure, so a
+        ;; typo in the master password is visible before you use the result
+        _ (warn "Identicon:" (identicon/identicon-of full-name master))
         password (spectre/derive (spectre/master-key full-name master (:variant effective))
                                  site
                                  effective)]
