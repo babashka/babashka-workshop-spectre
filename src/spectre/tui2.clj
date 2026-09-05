@@ -98,9 +98,9 @@
                 :list (item-list/item-list []
                                            :height (list-height 24)
                                            :cursor-style cursor-style)
-                :search-help (help/help search-help :width 60)
-                :identity-help (help/help identity-help :width 60)
-                :edit-help (help/help edit-help :width 60)}]
+                :search-help (help/help search-help)
+                :identity-help (help/help identity-help)
+                :edit-help (help/help edit-help)}]
      (refresh state))))
 
 (defn- figure
