@@ -3,6 +3,7 @@
    [borkdude.deflet :as d]
    [charm.components.list :as item-list]
    [charm.message :as msg]
+   [clojure.string :as str]
    [clojure.test :refer [deftest is testing]]
    [spectre.tui2 :as tui2]))
 
@@ -68,3 +69,13 @@
 (comment
   (clojure.test/run-tests 'spectre.tui2-test)
   )
+
+(def ^:private env {"SPECTRE_NAME" "John Doe" "SPECTRE_MASTER" "hunter2"})
+
+;; TODO: passes once spectre.tui2/state keeps the identicon for its env and the
+;; search screen shows it
+(deftest figure-test
+  (testing "the search screen shows the identicon when name and master are set"
+    (is (str/includes? (tui2/view (tui2/state db env)) "╰▒╝◓")))
+  (testing "and nothing when they are not"
+    (is (not (str/includes? (tui2/view (tui2/state db {})) "╰▒╝◓")))))

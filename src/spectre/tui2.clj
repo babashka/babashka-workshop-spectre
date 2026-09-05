@@ -9,7 +9,8 @@
    [charm.style.core :as style]
    [clojure.string :as str]
    [spectre.core :as spectre]
-   [spectre.db :as db]))
+   [spectre.db :as db]
+   [spectre.identicon :as identicon]))
 
 (def ^:private defaults {:counter 1 :template :long :variant :password})
 
@@ -68,21 +69,23 @@
 ;;;; init
 
 (defn state
-  "The initial state for a db value."
-  [db]
-  (let [sites (vec (sort (keys (:sites db))))
-        state {:db db
-               :sites sites
-               :mode :search
-               :term-height 24
-               :input (text-input/text-input :prompt "Search: "
-                                             :placeholder "type to filter")
-               :list (item-list/item-list []
-                                          :height (list-height 24)
-                                          :cursor-style cursor-style)
-               :search-help (help/help search-help :width 60)
-               :edit-help (help/help edit-help :width 60)}]
-    (refresh state)))
+  "The initial state for a db value. `env` is a map like (System/getenv)."
+  ([db] (state db (System/getenv)))
+  ([db env]
+   (let [sites (vec (sort (keys (:sites db))))
+         state {:db db
+                :sites sites
+                :figure nil ;; TODO: the identicon for this env
+                :mode :search
+                :term-height 24
+                :input (text-input/text-input :prompt "Search: "
+                                              :placeholder "type to filter")
+                :list (item-list/item-list []
+                                           :height (list-height 24)
+                                           :cursor-style cursor-style)
+                :search-help (help/help search-help :width 60)
+                :edit-help (help/help edit-help :width 60)}]
+     (refresh state))))
 
 (defn init []
   [(state (db/load-db)) nil])
@@ -164,6 +167,7 @@
                          (pos? n) (format "%d/%d sites" (inc (item-list/selected-index (:list state))) n)
                          (seq (:sites state)) "no match"
                          :else "no sites in db.edn yet"))
+         ;; TODO: show (:figure state) after the count, in title-style
          "\n\n"
          (item-list/list-view (:list state)) "\n"
          (help/short-help-view (:search-help state)))))

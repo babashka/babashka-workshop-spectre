@@ -6,6 +6,7 @@
    [clojure.string :as str]
    [spectre.core :as spectre]
    [spectre.db :as db]
+   [spectre.identicon :as identicon]
    [spectre.term :as term])
   (:import
    [org.jline.terminal Attributes Size Terminal]
@@ -85,16 +86,17 @@
 
 (defn- search-lines
   "The search screen: query, hit count, the visible slice of the list."
-  [{:keys [query hits cursor db]} rows]
+  [{:keys [query hits cursor db figure]} rows]
   (let [;; query line, blank, hits, footer
         room (max 1 (- rows 4))
         top (clamp (- cursor (quot room 2)) 0 (max 0 (- (count hits) room)))
         window (->> hits (drop top) (take room))]
     (concat
      [(line (str "Search: " query))
-      (line (if (seq hits)
-              (format "%d/%d sites" (inc cursor) (count hits))
-              (if (seq (:sites db)) "no match" "no sites in db.edn yet"))
+      (line (str (if (seq hits)
+                   (format "%d/%d sites" (inc cursor) (count hits))
+                   (if (seq (:sites db)) "no match" "no sites in db.edn yet"))
+                 (when figure (str "   " figure)))
             dim)
       (line "")]
      (map-indexed
@@ -203,7 +205,8 @@
 
 (defn- loop! [^Terminal terminal ^Display display]
   (let [in (.reader terminal)]
-    (loop [state (refresh {:db (db/load-db) :query "" :cursor 0 :mode :search})]
+    (loop [state (refresh {:db (db/load-db) :query "" :cursor 0 :mode :search
+                           :figure (identicon/from-env (System/getenv))})]
       (render! terminal display state)
       (let [k (read-key in)
             state' (if (= :edit (:mode state))
