@@ -3,7 +3,9 @@
    [borkdude.deflet :as d]
    [charm.components.list :as item-list]
    [charm.message :as msg]
+   [clojure.string :as str]
    [clojure.test :refer [deftest is testing]]
+   [spectre.identicon :as identicon]
    [spectre.tui2 :as tui2]))
 
 (def ^:private db
@@ -68,3 +70,30 @@
 (comment
   (clojure.test/run-tests 'spectre.tui2-test)
   )
+
+(def ^:private env {"SPECTRE_NAME" "John Doe" "SPECTRE_MASTER" "hunter2"})
+
+(defn- type-in [state text]
+  (reduce press state (map str text)))
+
+(deftest identity-test
+  (testing "tab opens the identity screen, esc and enter go back"
+    (is (= :identity (:mode (press (start) :tab))))
+    (is (= :search (:mode (-> (start) (press :tab) (press :escape)))))
+    (is (= :search (:mode (-> (start) (press :tab) (press :enter))))))
+  (testing "name and master password come prefilled from the environment"
+    (is (str/includes? (tui2/view (press (tui2/state db env) :tab)) "John Doe")))
+  (testing "the master password is never shown"
+    (is (not (str/includes? (tui2/view (press (tui2/state db env) :tab)) "hunter2")))))
+
+;; TODO, optional: passes once spectre.tui2/figure gives the identicon for the
+;; name and master password on the identity screen
+(deftest figure-test
+  (let [s (-> (tui2/state db {}) (press :tab) (type-in "JohnDoe") (press :down) (type-in "hunter2"))
+        expected (identicon/identicon-of "JohnDoe" "hunter2")]
+    (testing "the figure follows what is typed on the identity screen"
+      (is (str/includes? (tui2/view s) expected)))
+    (testing "and the search screen shows the same one"
+      (is (str/includes? (tui2/view (press s :escape)) expected)))
+    (testing "nothing while a field is still empty"
+      (is (not (str/includes? (tui2/view (-> (tui2/state db {}) (press :tab) (type-in "JohnDoe"))) "╰"))))))

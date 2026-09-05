@@ -30,6 +30,15 @@
      (nth right-arm (mod (b 2) (count right-arm)))
      (nth accessory (mod (b 3) (count accessory))))))
 
+(defn from-env
+  "The identicon for SPECTRE_NAME and SPECTRE_MASTER in `env`, a map like the
+   one (System/getenv) returns. Nil when either is not set."
+  [env]
+  (let [full-name (get env "SPECTRE_NAME")
+        main-pass (get env "SPECTRE_MASTER")]
+    (when (and (seq full-name) (seq main-pass))
+      (identicon-of full-name main-pass))))
+
 (comment
   (hmac-sha256 "correct horse battery staple" "lispyclouds")
 

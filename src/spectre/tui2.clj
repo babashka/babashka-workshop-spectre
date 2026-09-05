@@ -9,7 +9,8 @@
    [charm.style.core :as style]
    [clojure.string :as str]
    [spectre.core :as spectre]
-   [spectre.db :as db]))
+   [spectre.db :as db]
+   [spectre.identicon :as identicon]))
 
 (def ^:private defaults {:counter 1 :template :long :variant :password})
 
@@ -27,7 +28,13 @@
    "type" "filter"
    "up/down" "move"
    "enter" "edit"
+   "tab" "identity"
    "esc" "quit"))
+
+(def ^:private identity-help
+  (help/from-pairs
+   "↑/↓" "field"
+   "esc" "back"))
 
 (def ^:private edit-help
   (help/from-pairs
@@ -68,21 +75,39 @@
 ;;;; init
 
 (defn state
-  "The initial state for a db value."
-  [db]
-  (let [sites (vec (sort (keys (:sites db))))
-        state {:db db
-               :sites sites
-               :mode :search
-               :term-height 24
-               :input (text-input/text-input :prompt "Search: "
-                                             :placeholder "type to filter")
-               :list (item-list/item-list []
-                                          :height (list-height 24)
-                                          :cursor-style cursor-style)
-               :search-help (help/help search-help :width 60)
-               :edit-help (help/help edit-help :width 60)}]
-    (refresh state)))
+  "The initial state for a db value. `env` is a map like (System/getenv)."
+  ([db] (state db (System/getenv)))
+  ([db env]
+   (let [sites (vec (sort (keys (:sites db))))
+         state {:db db
+                :sites sites
+                ;; the identity screen, prefilled from the environment when set
+                :name-input (text-input/text-input :prompt "Name:   "
+                                                   :placeholder "your full name"
+                                                   :value (or (get env "SPECTRE_NAME") ""))
+                :master-input (text-input/text-input :prompt "Master: "
+                                                     :placeholder "your master password"
+                                                     :echo-mode :password
+                                                     :value (or (get env "SPECTRE_MASTER") "")
+                                                     :focused false)
+                :identity-field 0
+                :mode :search
+                :term-height 24
+                :input (text-input/text-input :prompt "Search: "
+                                              :placeholder "type to filter")
+                :list (item-list/item-list []
+                                           :height (list-height 24)
+                                           :cursor-style cursor-style)
+                :search-help (help/help search-help)
+                :identity-help (help/help identity-help)
+                :edit-help (help/help edit-help)}]
+     (refresh state))))
+
+(defn- figure
+  "The identicon for the name and master password on the identity screen, nil
+   while either is empty."
+  [state]
+  nil) ;; TODO, optional: for whoever is done early
 
 (defn init []
   [(state (db/load-db)) nil])
@@ -104,6 +129,9 @@
 
     (msg/key-match? m :enter)
     [(open-selected state) nil]
+
+    (msg/key-match? m :tab)
+    [(assoc state :mode :identity) nil]
 
     ;; only the arrow keys go to the list: its j/k/g bindings would swallow
     ;; the letters we want to search with
@@ -140,6 +168,24 @@
                                nil]
     :else [state nil]))
 
+(defn- identity-inputs [{:keys [identity-field]}]
+  (if (zero? identity-field) [:name-input :master-input] [:master-input :name-input]))
+
+(defn- update-identity [state m]
+  (cond
+    (or (msg/key-match? m :escape) (msg/key-match? m :enter))
+    [(assoc state :mode :search) nil]
+
+    (or (msg/key-match? m :up) (msg/key-match? m :down))
+    (let [state (assoc state :identity-field (if (msg/key-match? m :up) 0 1))
+          [active other] (identity-inputs state)]
+      [(-> state (update active text-input/focus) (update other text-input/blur)) nil])
+
+    :else
+    (let [[active] (identity-inputs state)
+          [input cmd] (text-input/text-input-update (get state active) m)]
+      [(assoc state active input) cmd])))
+
 (defn update-fn [state m]
   (cond
     (msg/key-match? m "ctrl+c")
@@ -152,6 +198,7 @@
      nil]
 
     (= :edit (:mode state)) (update-edit state m)
+    (= :identity (:mode state)) (update-identity state m)
     :else (update-search state m)))
 
 ;;;; view
@@ -164,6 +211,8 @@
                          (pos? n) (format "%d/%d sites" (inc (item-list/selected-index (:list state))) n)
                          (seq (:sites state)) "no match"
                          :else "no sites in db.edn yet"))
+         (when-let [figure (figure state)]
+           (str "   " (style/render title-style figure)))
          "\n\n"
          (item-list/list-view (:list state)) "\n"
          (help/short-help-view (:search-help state)))))
@@ -180,9 +229,23 @@
        "\n\n"
        (help/short-help-view (:edit-help state))))
 
+(defn- identity-view [state]
+  (str (style/render title-style "Who are you?") "\n\n"
+       (text-input/text-input-view (:name-input state)) "\n"
+       (text-input/text-input-view (:master-input state)) "\n\n"
+       (let [filled? (and (seq (text-input/value (:name-input state)))
+                          (seq (text-input/value (:master-input state))))]
+         (cond
+           (figure state) (style/render title-style (figure state))
+           filled? ""
+           :else (style/render label-style "the figure appears once both are filled in")))
+       "\n\n"
+       (help/short-help-view (:identity-help state))))
+
 (defn view [state]
-  (if (= :edit (:mode state))
-    (edit-view state)
+  (case (:mode state)
+    :edit (edit-view state)
+    :identity (identity-view state)
     (search-view state)))
 
 ;;;; entry point
