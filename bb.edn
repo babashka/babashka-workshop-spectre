@@ -1,5 +1,8 @@
 {:paths ["src" "test"]
- :deps {de.timokramer/charm.clj {:mvn/version "0.2.73"}}
+ :deps {de.timokramer/charm.clj {:mvn/version "0.2.73"}
+        ;; tests use deflet, and they are on :paths, so it has to be here
+        ;; rather than on the test task: the editor REPL loads them too
+        io.github.borkdude/deflet {:mvn/version "0.1.0"}}
  :tasks
  {test {:doc "Run tests. `bb test :nses spectre.cli-test` runs one exercise"
         :extra-paths ["test"]

@@ -2,6 +2,7 @@
   (:require
    [babashka.cli :as cli]
    [babashka.fs :as fs]
+   [borkdude.deflet :as d]
    [clojure.test :refer [deftest is testing]]
    [spectre.cli :as spectre-cli]
    [spectre.db :as db]))
@@ -23,8 +24,9 @@
 
 (deftest site-opts-test
   (fs/with-temp-dir [dir {}]
-    (let [opts {:path (str (fs/file dir "db.edn"))}
-          stored #(db/site-settings (db/load-db opts) "example.com")]
+    (d/deflet
+      (def opts {:path (str (fs/file dir "db.edn"))})
+      (def stored #(db/site-settings (db/load-db opts) "example.com"))
       (binding [*err* (java.io.StringWriter.)]
         (testing "a new site starts from the defaults, and they are saved"
           (is (= spectre-cli/defaults (site-opts "example.com" {} opts)))
