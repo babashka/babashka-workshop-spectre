@@ -44,14 +44,11 @@ Do this smoke test before you write any code:
 
 1. Start the TUI with `bb tui2 --nrepl`.
 2. Connect your editor to port 1667.
-3. Open `src/spectre/tui2.clj`. Replace `search-view` with this form, then
-   evaluate the form:
-
-   ```clojure
-   (defn- search-view [_] "HELLO FROM THE REPL")
-   ```
-
-4. Press a key in the TUI. The search screen shows only your text.
+3. Open `src/spectre/tui2.clj`. In `search-view`, change the text
+   `"no sites in db.edn yet"` to `"REPL WORKS"`. Then evaluate the whole
+   `search-view` form.
+4. Press a key in the TUI. The line below the search prompt shows the new
+   text. The rest of the screen does not change.
 5. Undo the change. Then evaluate the form again.
 
 If the text does not appear, your editor is connected to another process.
@@ -59,7 +56,7 @@ If the text does not appear, your editor is connected to another process.
 Notes:
 
 - A new definition appears on the next message. Evaluate, then press a key.
-- Do not print to `*out*` from the REPL. The TUI owns the screen.
+- Do not print to `*out*` from the REPL. The text writes over the TUI display.
 - `matches`, `open-selected` and `adjust` are live in the same way, because
   `update-fn` and `view` call them by name.
 - `init` runs one time, at the start. A new `init` does nothing until you
