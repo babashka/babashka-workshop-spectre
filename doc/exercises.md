@@ -35,6 +35,38 @@ TODO: how to run one test, or one namespace, using bb test --nses ...
 
 - E5: specter.tui skeleton
 
+### Change the TUI while it runs
+
+`bb tui2 --nrepl` starts an nREPL server on port 1667, then starts the TUI.
+Connect your editor to that port. Then you can write E5 without a restart.
+
+Do this smoke test before you write any code:
+
+1. Start the TUI with `bb tui2 --nrepl`.
+2. Connect your editor to port 1667.
+3. Evaluate these two forms:
+
+   ```clojure
+   (in-ns 'spectre.tui2)
+   (defn- search-view [_] "HELLO FROM THE REPL")
+   ```
+
+4. Press a key in the TUI. The search screen shows only your text.
+5. Evaluate the file again. This restores `search-view`.
+
+If the text does not appear, your editor is connected to another process.
+
+Notes:
+
+- A new definition appears on the next message. Evaluate, then press a key.
+- Do not print to `*out*` from the REPL. The TUI owns the screen.
+- `matches`, `open-selected` and `adjust` are live in the same way, because
+  `update-fn` and `view` call them by name.
+- `init` runs one time, at the start. A new `init` does nothing until you
+  restart the TUI.
+- E3 gives you `spectre.db/load-db`. Before E3 is done, the TUI shows
+  "no sites in db.edn yet" and the list is empty.
+
 ## E6
 
 - E6: bbin (no skeleton, just follow bbin docs). Also show local script with relative bb.edn as lighter weight local solution.
