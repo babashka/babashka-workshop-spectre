@@ -18,12 +18,16 @@
       (.terminal term)
       (.build)))
 
+;; one system terminal per process: a second TerminalBuilder falls back to a
+;; dumb terminal, and a dumb terminal echoes the password in plain text
+(def ^:private term (delay (terminal)))
+
 (def ^:private reader
-  (delay (line-reader (terminal))))
+  (delay (line-reader @term)))
 
 ;; a second reader for secrets: what is typed there must not end up in history
 (def ^:private secret-reader
-  (delay (doto ^LineReaderImpl (line-reader (terminal))
+  (delay (doto ^LineReaderImpl (line-reader @term)
            (.setVariable "disable-history" true))))
 
 (defn tty?
