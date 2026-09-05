@@ -57,10 +57,6 @@ Notes:
 
 - A new definition appears on the next message. Evaluate, then press a key.
 - Do not print to `*out*` from the REPL. The text writes over the TUI display.
-- `matches`, `open-selected` and `adjust` are live in the same way, because
-  `update-fn` and `view` call them by name.
-- `init` runs one time, at the start. A new `init` does nothing until you
-  restart the TUI.
 - E3 gives you `spectre.db/load-db`. Before E3 is done, the TUI shows
   "no sites in db.edn yet" and the list is empty.
 
