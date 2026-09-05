@@ -44,15 +44,15 @@ Do this smoke test before you write any code:
 
 1. Start the TUI with `bb tui2 --nrepl`.
 2. Connect your editor to port 1667.
-3. Evaluate these two forms:
+3. Open `src/spectre/tui2.clj`. Replace `search-view` with this form, then
+   evaluate the form:
 
    ```clojure
-   (in-ns 'spectre.tui2)
    (defn- search-view [_] "HELLO FROM THE REPL")
    ```
 
 4. Press a key in the TUI. The search screen shows only your text.
-5. Evaluate the file again. This restores `search-view`.
+5. Undo the change. Then evaluate the form again.
 
 If the text does not appear, your editor is connected to another process.
 
