@@ -116,14 +116,14 @@
       [(refresh (assoc state :input input)) cmd])))
 
 (defn- cycle-value
-  "Next or previous value for a field, wrapping around."
-  [values v step]
+  "The next or previous value for a field, wrapping around."
+  [values v dir]
   v) ;; TODO
 
 (defn- adjust
   "Step a field of the draft. A field with :values cycles through them, the
    counter counts, and never below 1."
-  [draft {:keys [key values]} step]
+  [draft {:keys [key values]} dir]
   draft) ;; TODO
 
 (defn- update-edit [{:keys [site draft field] :as state} m]
@@ -131,8 +131,8 @@
     (msg/key-match? m :escape) [(assoc state :mode :search) nil]
     (msg/key-match? m :up) [(assoc state :field (max 0 (dec field))) nil]
     (msg/key-match? m :down) [(assoc state :field (min (dec (count fields)) (inc field))) nil]
-    (msg/key-match? m :left) [(assoc state :draft (adjust draft (fields field) -1)) nil]
-    (msg/key-match? m :right) [(assoc state :draft (adjust draft (fields field) 1)) nil]
+    (msg/key-match? m :left) [(assoc state :draft (adjust draft (fields field) :prev)) nil]
+    (msg/key-match? m :right) [(assoc state :draft (adjust draft (fields field) :next)) nil]
     (msg/key-match? m :enter) [(-> state
                                    (assoc :db (db/merge-site! (:db state) site draft)
                                           :mode :search)

@@ -153,15 +153,20 @@
            :cursor (clamp cursor 0 (max 0 (dec (count hits)))))))
 
 (defn- cycle-value
-  "Next or previous value for a field, wrapping around."
-  [values v step]
-  (let [i (or (some (fn [[i x]] (when (= x v) i)) (map-indexed vector values)) 0)]
-    (nth values (mod (+ i step) (count values)))))
+  "The next or previous value for a field, wrapping around."
+  [values v dir]
+  (let [vs (cond-> values (= :prev dir) reverse)]
+    (if (some #{v} vs)
+      (second (drop-while #(not= v %) (cycle vs)))
+      (first values))))
 
-(defn- adjust [draft {:keys [key values]} step]
+(defn- adjust
+  "Step a field of the draft. A field with :values cycles through them, the
+   counter counts, and never below 1."
+  [draft {:keys [key values]} dir]
   (if values
-    (update draft key #(cycle-value values % step))
-    (update draft key #(max 1 (+ (or % 1) step)))))
+    (update draft key #(cycle-value values % dir))
+    (update draft key #(max 1 ((if (= :prev dir) dec inc) (or % 1))))))
 
 (defn- search-key [{:keys [query cursor hits] :as state} k]
   (case k
@@ -187,8 +192,8 @@
     :escape (assoc state :mode :search)
     :up (assoc state :field (max 0 (dec field)))
     :down (assoc state :field (min (dec (count fields)) (inc field)))
-    :left (assoc state :draft (adjust draft (fields field) -1))
-    :right (assoc state :draft (adjust draft (fields field) 1))
+    :left (assoc state :draft (adjust draft (fields field) :prev))
+    :right (assoc state :draft (adjust draft (fields field) :next))
     :enter (-> state
                (assoc :db (db/merge-site! (:db state) site draft) :mode :search)
                (refresh))

@@ -2,7 +2,6 @@
 
 TODO:
 
-- MB: add `bb dev` tasks (with optional --jvm flag to start nREPL on the JVM)
 - MB: check autocompletions for built-in bb commands and bb pw
 - MB: change step to up/down or prev/next in tui2?
 - MB: TUI2 REPL: change code while TUI is running, find out how to setup
