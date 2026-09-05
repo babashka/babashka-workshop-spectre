@@ -1,8 +1,10 @@
 (ns spectre.term
   "JLine helpers: prompts, masked password input."
   (:import
-   [org.jline.reader EndOfFileException LineReader LineReaderBuilder UserInterruptException]
-   [org.jline.terminal Terminal TerminalBuilder]))
+   [org.jline.reader EndOfFileException Highlighter LineReader LineReaderBuilder UserInterruptException]
+   [org.jline.reader.impl LineReaderImpl]
+   [org.jline.terminal Terminal TerminalBuilder]
+   [org.jline.utils AttributedString]))
 
 (set! *warn-on-reflection* true)
 
@@ -18,6 +20,11 @@
 
 (def ^:private reader
   (delay (line-reader (terminal))))
+
+;; a second reader for secrets: what is typed there must not end up in history
+(def ^:private secret-reader
+  (delay (doto ^LineReaderImpl (line-reader (terminal))
+           (.setVariable "disable-history" true))))
 
 (defn tty?
   "True when running attached to a terminal, false when piped or redirected."
@@ -44,10 +51,27 @@
     (or-abort (.readLine ^LineReader @reader ^String prompt))
     (read-plain prompt)))
 
+(defn- masked
+  "A highlighter that draws a * per character typed, then what `figure` makes of
+   the text so far. JLine calls it on every keystroke, so the figure follows the
+   typing."
+  ^Highlighter [figure]
+  (reify Highlighter
+    (highlight [_ _ text]
+      (AttributedString. (str (apply str (repeat (count text) \*))
+                              (when (and figure (seq text)) (str "  " (figure text))))))
+    (setErrorPattern [_ _])
+    (setErrorIndex [_ _])))
+
 (defn password
-  "Prompt for a line of input, echoing * per character.
-   Falls back to plain (echoed) input when not connected to a terminal."
-  [prompt]
-  (if (tty?)
-    (or-abort (.readLine ^LineReader @reader ^String prompt (Character/valueOf \*)))
-    (read-plain prompt)))
+  "Prompt for a line of input, echoing * per character. With `figure`, a fn of
+   the text typed so far, its result is drawn after the stars and redrawn on
+   every keystroke. Falls back to plain (echoed) input when not connected to a
+   terminal."
+  ([prompt] (password prompt nil))
+  ([prompt figure]
+   (if (tty?)
+     (let [^LineReaderImpl r @secret-reader]
+       (.setHighlighter r (masked figure))
+       (or-abort (.readLine r ^String prompt)))
+     (read-plain prompt))))
