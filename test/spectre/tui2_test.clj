@@ -1,5 +1,6 @@
 (ns spectre.tui2-test
   (:require
+   [borkdude.deflet :as d]
    [charm.components.list :as item-list]
    [charm.message :as msg]
    [clojure.test :refer [deftest is testing]]
@@ -19,9 +20,11 @@
 (defn- start []
   (first (tui2/update-fn (tui2/state db) (msg/window-size 80 24))))
 
+;; TODO: passes once spectre.tui2/matches filters and ranks the sites
 (deftest search-test
   (testing "typing filters the list, backspace widens it again"
-    (let [s (reduce press (start) ["g" "o"])]
+    (d/deflet
+      (def s (reduce press (start) ["g" "o"]))
       (is (= ["google.com" "mail.google.com"] (titles s)))
       (is (= 3 (count (titles (press s :backspace)))))))
   (testing "the window size sets the list height"
@@ -31,12 +34,16 @@
     (is (= 0 (item-list/selected-index (:list (press (start) :up))))))
   (testing "letters bound by the list go to the search field, not the cursor"
     ;; the list binds g to go-to-start: here it has to end up in the query
-    (let [s (-> (start) (press :down) (press "g"))]
+    (d/deflet
+      (def s (-> (start) (press :down) (press "g")))
       (is (= ["google.com" "mail.google.com" "example.org"] (titles s)))
       (is (= 1 (item-list/selected-index (:list s)))))))
 
+;; TODO: passes once spectre.tui2/open-selected and adjust are written.
+;; Needs spectre.db/site-settings from E2 as well, for the stored settings
 (deftest edit-test
-  (let [editing (-> (start) (press "g") (press :enter))]
+  (d/deflet
+    (def editing (-> (start) (press "g") (press :enter)))
     (testing "enter opens the selected site with its stored settings"
       (is (= :edit (:mode editing)))
       (is (= "google.com" (:site editing)))
@@ -53,6 +60,11 @@
 
 (deftest view-test
   (testing "both screens render without blowing up"
-    (let [s (reduce press (start) ["g" "o"])]
+    (d/deflet
+      (def s (reduce press (start) ["g" "o"]))
       (is (string? (tui2/view s)))
       (is (string? (tui2/view (press s :enter)))))))
+
+(comment
+  (clojure.test/run-tests 'spectre.tui2-test)
+  )

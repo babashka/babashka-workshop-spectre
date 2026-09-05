@@ -187,10 +187,27 @@
 
 ;;;; entry point
 
+(def ^:private browse-spec
+  {:nrepl {:desc "Also serve an nREPL, to change the TUI while it runs" :coerce :boolean}
+   :port {:desc "Port for --nrepl" :coerce :long :default 1667 :alias :p}})
+
 (defn browse
-  "Browse and edit the sites in db.edn."
-  [& _]
-  (program/run {:init init
-                :update update-fn
-                :view view
+  "Browse and edit the sites in db.edn.
+
+  With --nrepl, redefining `view` or `update-fn` from your editor takes effect
+  on the next keystroke. Evaluate, then press a key to see it. Do not print to
+  *out* from there: the TUI owns the screen."
+  {:org.babashka/cli {:spec browse-spec :restrict true}}
+  [{:keys [nrepl port]}]
+  (when nrepl
+    ;; resolved at call time, so this namespace still loads on a JVM REPL,
+    ;; where babashka.nrepl.server does not exist
+    ((requiring-resolve 'babashka.nrepl.server/start-server!)
+     {:host "127.0.0.1" :port port}))
+  (program/run {;; init runs once, so there is nothing to reload there
+                :init init
+                ;; the vars, not their values: charm calls these on every
+                ;; message, so redefining one lands on the next keystroke
+                :update #'update-fn
+                :view #'view
                 :alt-screen true}))

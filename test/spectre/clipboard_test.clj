@@ -6,6 +6,7 @@
    [clojure.test :refer [deftest is testing]]
    [spectre.clipboard :as clipboard]))
 
+;; TODO: passes once spectre.clipboard/copy! sends the value over stdin
 (deftest copy-test
   (testing "the value is passed over stdin"
     (let [f (fs/create-temp-file {:suffix ".clip"})
