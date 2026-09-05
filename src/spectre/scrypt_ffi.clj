@@ -20,8 +20,8 @@
     (let [*passwd (ffi/alloc arena (max (alength passwd) 1))
           *salt (ffi/alloc arena (max (alength salt) 1))
           *out (ffi/alloc arena dk-len)]
-      (ffi/write-bytes *passwd passwd)
-      (ffi/write-bytes *salt salt)
+      (ffi/write-array *passwd :char passwd)
+      (ffi/write-array *salt :char salt)
       (let [rc (native-fn
                 *passwd
                 (alength passwd)
@@ -32,7 +32,7 @@
                 dk-len)]
         (when-not (zero? rc)
           (throw (ex-info "scrypt failed" {:rc rc})))
-        (ffi/read-bytes *out dk-len)))))
+        (ffi/read-array *out :char dk-len)))))
 
 (comment
   (def bytes (scrypt (.getBytes "password" "UTF-8") (.getBytes "salt" "UTF-8") 32768 8 2 64))

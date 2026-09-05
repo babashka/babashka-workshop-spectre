@@ -11,11 +11,11 @@ This workshop uses Babashka to build a password manager CLI with:
 
 Install the following:
 
-- [Babashka](https://github.com/babashka/babashka#installation), with FFI support if you want to use the libsodium implementation.
+- [Babashka](https://github.com/babashka/babashka#installation), with FFI support if you want to use the libsodium implementation (>= 1.13.220).
 - Java 17 or later.
 - [Clojure CLI](https://clojure.org/guides/install_clojure) (optional).
 - OpenSSL 3 or later, unless you use the FFI implementation.
-- [libsodium](https://libsodium.gitbook.io/doc/installation) for the FFI implementation.
+- [libsodium](https://libsodium.gitbook.io/doc/installation) for the FFI implementation
 
 On macOS, install OpenSSL with `brew install openssl`. The system OpenSSL version is not compatible.
 
