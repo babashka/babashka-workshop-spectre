@@ -107,7 +107,10 @@
   "The identicon for the name and master password on the identity screen, nil
    while either is empty."
   [state]
-  nil) ;; TODO
+  (let [full-name (text-input/value (:name-input state))
+        main-pass (text-input/value (:master-input state))]
+    (when (and (seq full-name) (seq main-pass))
+      (identicon/identicon-of full-name main-pass))))
 
 (defn init []
   [(state (db/load-db)) nil])
