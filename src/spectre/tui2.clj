@@ -233,9 +233,12 @@
   (str (style/render title-style "Who are you?") "\n\n"
        (text-input/text-input-view (:name-input state)) "\n"
        (text-input/text-input-view (:master-input state)) "\n\n"
-       (if-let [figure (figure state)]
-         (style/render title-style figure)
-         (style/render label-style "the figure appears once both are filled in"))
+       (let [filled? (and (seq (text-input/value (:name-input state)))
+                          (seq (text-input/value (:master-input state))))]
+         (cond
+           (figure state) (style/render title-style (figure state))
+           filled? ""
+           :else (style/render label-style "the figure appears once both are filled in")))
        "\n\n"
        (help/short-help-view (:identity-help state))))
 
