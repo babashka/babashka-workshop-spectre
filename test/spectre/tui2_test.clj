@@ -20,6 +20,7 @@
 (defn- start []
   (first (tui2/update-fn (tui2/state db) (msg/window-size 80 24))))
 
+;; TODO: passes once spectre.tui2/matches filters and ranks the sites
 (deftest search-test
   (testing "typing filters the list, backspace widens it again"
     (d/deflet
@@ -38,6 +39,8 @@
       (is (= ["google.com" "mail.google.com" "example.org"] (titles s)))
       (is (= 1 (item-list/selected-index (:list s)))))))
 
+;; TODO: passes once spectre.tui2/open-selected and adjust are written.
+;; Needs spectre.db/site-settings from E2 as well, for the stored settings
 (deftest edit-test
   (d/deflet
     (def editing (-> (start) (press "g") (press :enter)))
