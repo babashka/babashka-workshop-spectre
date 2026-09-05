@@ -28,7 +28,9 @@
 ;; a second reader for secrets: what is typed there must not end up in history
 (def ^:private secret-reader
   (delay (doto ^LineReaderImpl (line-reader @term)
-           (.setVariable "disable-history" true))))
+           (.setVariable "disable-history" true)
+           ;; the figure goes on a second line, which JLine would prefix with "> "
+           (.setVariable "secondary-prompt-pattern" ""))))
 
 (defn tty?
   "True when running attached to a terminal, false when piped or redirected."
@@ -56,20 +58,20 @@
     (read-plain prompt)))
 
 (defn- masked
-  "A highlighter that draws a * per character typed, then what `figure` makes of
-   the text so far. JLine calls it on every keystroke, so the figure follows the
-   typing."
+  "A highlighter that draws a * per character typed and, on the line below, what
+   `figure` makes of the text so far. JLine calls it on every keystroke, so the
+   figure follows the typing."
   ^Highlighter [figure]
   (reify Highlighter
     (highlight [_ _ text]
       (AttributedString. (str (apply str (repeat (count text) \*))
-                              (when (and figure (seq text)) (str "  " (figure text))))))
+                              (when (and figure (seq text)) (str "\n" (figure text))))))
     (setErrorPattern [_ _])
     (setErrorIndex [_ _])))
 
 (defn password
   "Prompt for a line of input, echoing * per character. With `figure`, a fn of
-   the text typed so far, its result is drawn after the stars and redrawn on
+   the text typed so far, its result is drawn on the line below and redrawn on
    every keystroke. Falls back to plain (echoed) input when not connected to a
    terminal."
   ([prompt] (password prompt nil))
