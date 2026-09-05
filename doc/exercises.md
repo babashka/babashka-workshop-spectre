@@ -2,8 +2,6 @@
 
 TODO:
 
-- MB: check autocompletions for built-in bb commands and bb pw
-- MB: change step to up/down or prev/next in tui2?
 - MB: TUI2 REPL: change code while TUI is running, find out how to setup
 - MB: make exercise tests for TUI2
 - MB: add identicon to the terminal output (in bb pw google.com) and exercise: add to TUI2 somewhere
