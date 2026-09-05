@@ -31,7 +31,10 @@
   "Site settings: the db entry, or app defaults for a new site. Flags
    override. When the effective settings differ from the db, warn and save."
   ([site explicit] (site-opts site explicit {}))
-  ([site explicit db-opts])) ;; TODO
+  ([site explicit db-opts]
+   ;; TODO: read db.edn, let a stored setting win over the default, and warn
+   ;; and save when a flag differs from what is stored
+   (merge defaults explicit)))
 
 (defn generate
   "Derive a site password.
