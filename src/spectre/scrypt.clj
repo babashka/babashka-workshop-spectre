@@ -50,7 +50,7 @@
 
 (comment
   @openssl ;; this should be a path to OpenSSL 3
-
+  
   (def bytes (scrypt (.getBytes "password" "UTF-8") (.getBytes "salt" "UTF-8") 32768 8 2 64))
 
   (def expected (String. (.encode (java.util.Base64/getEncoder) bytes)))
