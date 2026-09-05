@@ -4,6 +4,7 @@
    [spectre.clipboard :as clipboard]
    [spectre.core :as spectre]
    [spectre.db :as db]
+   [spectre.identicon :as identicon]
    [spectre.term :as term]))
 
 (def defaults {:counter 1 :template :long :variant :password})
@@ -30,7 +31,10 @@
   "Site settings: the db entry, or app defaults for a new site. Flags
    override. When the effective settings differ from the db, warn and save."
   ([site explicit] (site-opts site explicit {}))
-  ([site explicit db-opts])) ;; TODO
+  ([site explicit db-opts]
+   ;; TODO: read db.edn, let a stored setting win over the default, and warn
+   ;; and save when a flag differs from what is stored
+   (merge defaults explicit)))
 
 (defn generate
   "Derive a site password.
@@ -47,6 +51,9 @@
         effective (site-opts site explicit)
         full-name (or (:name opts) (System/getenv "SPECTRE_NAME") (term/input "Full name: "))
         master (or (System/getenv "SPECTRE_MASTER") (term/password "Master password: "))
+        ;; the same name and master password always draw the same figure, so a
+        ;; typo in the master password is visible before you use the result
+        _ (warn "Identicon:" (identicon/identicon-of full-name master))
         password (spectre/derive (spectre/master-key full-name master (:variant effective))
                                  site
                                  effective)]

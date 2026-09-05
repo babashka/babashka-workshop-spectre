@@ -2,8 +2,6 @@
 
 TODO:
 
-- MB: TUI2 REPL: change code while TUI is running, find out how to setup
-- MB: make exercise tests for TUI2
 - MB: add identicon to the terminal output (in bb pw google.com) and exercise: add to TUI2 somewhere
 - MB: write slides for walkthrough of core libs (including FFI) in pitch deck
 - RD: write elaborate instructions here for all exercises
