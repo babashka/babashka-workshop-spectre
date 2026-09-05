@@ -2,7 +2,6 @@
 
 TODO:
 
-- MB: add identicon to the terminal output (in bb pw google.com) and exercise: add to TUI2 somewhere
 - MB: write slides for walkthrough of core libs (including FFI) in pitch deck
 - RD: write elaborate instructions here for all exercises
 
