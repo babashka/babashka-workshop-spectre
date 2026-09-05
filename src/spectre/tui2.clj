@@ -204,11 +204,10 @@
     ;; where babashka.nrepl.server does not exist
     ((requiring-resolve 'babashka.nrepl.server/start-server!)
      {:host "127.0.0.1" :port nrepl}))
-  (program/run {:init init
-                ;; the vars, not their values: charm calls them on every
-                ;; message, so a redefinition is picked up immediately.
-                ;; :init has to stay a plain fn, charm tests it with `fn?`
-                ;; and a var is not one
+  (program/run {;; init runs once, so there is nothing to reload there
+                :init init
+                ;; the vars, not their values: charm calls these on every
+                ;; message, so redefining one lands on the next keystroke
                 :update #'update-fn
                 :view #'view
                 :alt-screen true}))
