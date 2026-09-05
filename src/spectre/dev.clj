@@ -17,8 +17,12 @@
   (edn/read-string (:out (p/shell {:out :string} "bb print-deps"))))
 
 (def spec
-  {:port {:desc "Port to listen on" :coerce :long :alias :p :default 1667}
-   :jvm {:desc "Serve from a JVM Clojure, with cider-nrepl" :coerce :boolean}})
+  {:port {:desc "Port to listen on"
+          :coerce :long
+          :alias :p
+          :default 1667}
+   :jvm {:desc "Serve from a JVM Clojure, with cider-nrepl"
+         :coerce :boolean}})
 
 (defn start
   "Start an nREPL server for your editor.
@@ -33,5 +37,4 @@
                    "-M" "-m" "nrepl.cmdline"
                    "--port" (str port)
                    "--middleware" "[cider.nrepl/cider-middleware]")
-    (do (nrepl/start-server! {:host "127.0.0.1" :port port})
-        @(promise))))
+    (nrepl/start-server! {:host "127.0.0.1" :port port})))
