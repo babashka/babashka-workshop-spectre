@@ -13,6 +13,8 @@
                        :vars [:symbol]
                        :includes [:keyword]
                        :excludes [:keyword]}}}
+  dev {:doc "Start an nREPL server for your editor"
+       :exec-fn spectre.dev/start}
   pw {:exec-fn spectre.cli/generate}
   tui {:doc "Browse and edit sites in db.edn"
        :exec-fn spectre.tui/browse}
