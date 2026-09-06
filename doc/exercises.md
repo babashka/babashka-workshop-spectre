@@ -3,34 +3,114 @@
 TODO:
 
 - MB: write slides for walkthrough of core libs (including FFI) in pitch deck
-- RD: write elaborate instructions here for all exercises
+
+Run all tests at any point with:
+
+```
+bb test
+```
+
+To run a single namespace instead of the whole suite, pass `:nses`:
+
+```
+bb test :nses spectre.core-test
+```
+
+`:nses` takes any number of symbols, so you can list several namespaces at once. To narrow further, to one or a few `deftest` vars, use `:vars` instead (or together with `:nses`):
+
+```
+bb test :vars spectre.cli-test/spec-test
+```
+
+You can also select by test metadata with `:includes`/`:excludes`, e.g. `bb test :excludes '[:clipboard]'` to skip the real-clipboard test in E2.
 
 ## E1
 
-Write a few sanity tests for core and run with bb test task:
+`spectre.core` and `spectre.scrypt` are given to you complete and working:
+together they are a full, correct implementation of the Spectre v3 algorithm.
+Read through `src/spectre/core.clj` before doing anything else, it is the foundation every other exercise builds on.
 
-TODO: how to run one test, or one namespace, using bb test --nses ...
+`test/spectre/core_test.clj` has only one test, checking a single known name/password/site combination against its expected output. Add a few more sanity tests of your own to that namespace:
 
-- E1: Empty project with specter.scrypt/core given + cognitect test runner + test skeletons
-  - Write a few sanity tests for core and run with bb test task
+- Derive a password for the same name and master password but a different `site`, and check it differs from the existing example.
+- Derive with a different `variant` (`:login`, `:answer`) and check that changes the result too.
+- Derive with a different `template` (e.g. `:maximum`, `:pin`, `:short`) and check the length/shape looks right for that template.
+- Bump `:counter` and check you get a different password again.
+- Two calls with exactly the same arguments should always return the exact same password proving Spectre is stateless
+
+There is also `spectre.scrypt-ffi`, an alternative to `spectre.scrypt` that calls into libsodium directly via Babashka's FFI support instead of shelling out to the `openssl` binary. It is not wired in by default (`core.clj` requires `spectre.scrypt`, with the FFI require commented out above it). If you have libsodium installed and a Babashka build with FFI support, try swapping the two requires in `core.clj` and confirming the same tests still pass, i.e. the two scrypt implementations agree byte-for-byte. Each namespace also has its own `comment` block with a known input/output pair you can check directly at the REPL.
+
+Run just this namespace while you work with `bb test :nses spectre.core-test`
 
 ## E2
 
-- E2: clipboard skeleton
+`src/spectre/clipboard.clj` is a skeleton with two functions to write:
+
+- `tool`: return the first available clipboard command from the `tools` table already defined at the top of the file (`pbcopy`, `wl-copy`, `xclip`, `xsel`, `clip`), or `nil` if none of them exist on this machine. Use `babashka.fs/which` to check whether a command exists on the `PATH`.
+- `copy!`: run the given command (defaulting to `(tool)`) and write `s` to its **stdin**.
+  Use `babashka.process/process` (or `sh`) with `:in s`.
+  Return the command used, or `nil` when there is none to fall back to.
+
+`test/spectre/clipboard_test.clj` drives `copy!` with a fake "clipboard" command that just writes stdin to a file, so `copy-test` and `no-tool-test` run everywhere without touching your real clipboard.
+Get those two passing first:
+
+```
+bb test :nses spectre.clipboard-test :excludes '[:clipboard]'
+```
+
+There is a third test, `real-clipboard-test`, tagged `^:clipboard`, that exercises your actual system clipboard. It only runs when `SPECTRE_CLIPBOARD_TEST` is set.
+
+```
+SPECTRE_CLIPBOARD_TEST=1 bb test :nses spectre.clipboard-test
+```
 
 ## E3
 
-- E3: specter.db skeleton
+`src/spectre/db.clj` stores per-site settings (`:counter`, `:template`, `:variant`) in a flat EDN file, `db.edn` by default, shaped like:
+
+```clojure
+{:sites {"example.com" {:counter 1 :template :long :variant :password}}}
+```
+
+Four functions to write:
+
+- `load-db`: read `path` and `edn/read-string` it, or return an empty db (`{:sites {}}`) when the file does not exist yet. Use `babashka.fs/exists?` to check first.
+- `save-db!`: write `db` back to `path` as EDN.
+- `site-settings`: look up one site's settings map in `db`, or `nil` when it is not there yet.
+- `merge-site!`: merge `settings` into the existing entry for `site` (so a partial update, e.g. just a new `:counter`, does not wipe the other keys), save the result with `save-db!`, and return the updated db.
 
 ## E4
 
-- E4: specter.cli skeleton
+`src/spectre/cli.clj` wires `spectre.core`, `spectre.clipboard`, `spectre.db` and `spectre.identicon` into the `pw` command. Four TODOs, make `test/spectre/cli_test.clj` pass:
 
-4 TODOs, make tests pass
+```
+bb test :nses spectre.cli-test
+```
+
+- `known-sites`: the sorted list of sites already in `db.edn`, for CLI completion. Load the db (via `spectre.db/load-db`) and pull the keys out of `:sites`.
+- `spec`: currently only declares `:site` and `:print`. Add `:name`, `:counter`, `:template` and `:variant`, matching what `spec-test` expects:
+  every flag needs a single-letter `:alias` (`-u`, `-c`, `-t`, `-v`) and coerces to the right type (`:counter` to a number, `:template` and `:variant` to keywords).
+  For the `:site` positional, wire `known-sites` in as the completion source (see `babashka.cli`'s docs for how a spec entry offers completions).
+- `site-opts`: currently just merges `defaults` with the explicit flags, ignoring the db entirely.
+  Change it to read `db.edn` (`db/load-db` with the given `opts`, which carries `:path` in tests), prefer that stored setting over `defaults`, then let an explicit flag win over that.
+  When the effective settings differ from what is stored (a new site, or a flag that overrides a stored value), warn on stderr and save with `db/merge-site!`.
+- A template outside the known set (`spectre.core/templates`) should be rejected by the CLI parser itself: `spec-test`'s last `testing` block checks this, so make sure `:template`'s coercion/validation catches it rather than failing later inside `derive`.
 
 ## E5
 
-- E5: specter.tui skeleton
+specter.tui2 skeleton, built on [charm.clj](https://github.com/TimoKramer/charm.clj), a Bubble Tea-style TUI toolkit.
+`spectre.tui` next to it is a from-scratch version of the same UI built directly on JLine, kept as a reference if you want similar behaviour without a TUI framework.
+
+`test/spectre/tui2_test.clj` drives `tui2/update-fn` and `tui2/view` directly, so you can make all of it pass without ever running the TUI. Get there first with `bb test :nses spectre.tui2-test`, then use the REPL workflow below to see it live.
+
+TODOs in `src/spectre/tui2.clj`:
+
+- `matches`: filter `sites` to those containing `query`, case-insensitively, with prefix matches sorted before matches in the middle of the name (see `search-test`).
+- `open-selected`: when `enter` is pressed on the search screen, switch `:mode` to `:edit`, record the selected `:site`, and load its `:draft` settings from `db/site-settings` when the site is already in `db.edn`, falling back to `defaults` for a new one (see `edit-test`).
+- `cycle-value`: step to the next or previous value in `values`, wrapping around at either end.
+- `adjust`: use `cycle-value` for fields that declare `:values` (`template`, `variant`); for `:counter`, increment or decrement, never going below 1.
+- `figure` (optional, for whoever is done early): the identicon (`spectre.identicon/identicon-of`) for whatever is currently typed into `:name-input`/`:master-input` on the identity screen, or `nil` while either is still empty.
+  `figure-test` checks it updates live as you type and that the search screen picks up the same figure once it exists.
 
 ### Change the TUI while it runs
 
@@ -40,13 +120,10 @@ Connect your editor to that port. Then you can write E5 without a restart.
 Do this smoke test before you write any code:
 
 1. Start the TUI with `bb tui2 --nrepl`.
-2. Connect your editor to port 1667.
-3. Open `src/spectre/tui2.clj`. In `search-view`, change the text
-   `"no sites in db.edn yet"` to `"REPL WORKS"`. Then evaluate the whole
-   `search-view` form.
-4. Press a key in the TUI. The line below the search prompt shows the new
-   text. The rest of the screen does not change.
-5. Undo the change. Then evaluate the form again.
+1. Connect your editor to port 1667.
+1. Open `src/spectre/tui2.clj`. In `search-view`, change the text `"no sites in db.edn yet"` to `"REPL WORKS"`. Then evaluate the whole `search-view` form.
+1. Press a key in the TUI. The line below the search prompt shows the new text. The rest of the screen does not change.
+1. Undo the change. Then evaluate the form again.
 
 If the text does not appear, your editor is connected to another process.
 
@@ -59,4 +136,9 @@ Notes:
 
 ## E6
 
-- E6: bbin (no skeleton, just follow bbin docs). Also show local script with relative bb.edn as lighter weight local solution.
+No skeleton or tests here, this exercise is about packaging and running.
+
+- Install [bbin](https://github.com/babashka/bbin) if you have not already, then install `pw` from this repo with it, e.g. `bbin install . --main-opts '["-x" "spectre.cli/generate"]'` (or point it at the `pw` task with `--as pw`: check bbin's own README for the exact invocation it wants for a `deps.edn`/`bb.edn`-based project rather than a single script). Confirm you can now run `pw example.com` from any directory, without `cd`-ing into this repo first.
+- bbin is for you want a command installed globally on your `PATH`.
+  For something lighter, a script you keep in a project folder and run with `bb`, without installing anything system-wide: a relative `bb.edn` next to the script is often enough: a `bb.edn`'s `:paths`/`:deps` resolve relative to wherever that `bb.edn` file lives, so a small script directory with its own `bb.edn` (pointing `:paths` back at this repo's `src`) gets the same dependencies without a global install.
+  Try building one for a single site lookup, e.g. a two-line script that just calls `spectre.cli/generate` with a hardcoded site.
