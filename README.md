@@ -37,6 +37,8 @@ For editor support, install:
 - Vim: https://github.com/liquidz/elin
 - Sublime Text 4: https://github.com/tonsky/Clojure-Sublimed
 
+### [Exercises](/doc/exercises.md)
+
 ## License
 
 Copyright (c) Michiel Borkent and Rahul De
