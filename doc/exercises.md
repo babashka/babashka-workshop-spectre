@@ -6,19 +6,19 @@ Run all tests at any point with:
 bb test
 ```
 
-To run a single namespace instead of the whole suite, pass `:nses`:
+To run a single namespace instead of the whole suite, pass `--nses`:
 
 ```
-bb test :nses spectre.core-test
+bb test --nses spectre.core-test
 ```
 
-`:nses` takes any number of symbols, so you can list several namespaces at once. To narrow further, to one or a few `deftest` vars, use `:vars` instead (or together with `:nses`):
+`--nses` takes any number of symbols, so you can list several namespaces at once. To narrow further, to one or a few `deftest` vars, use `--vars` instead (or together with `--nses`):
 
 ```
-bb test :vars spectre.cli-test/spec-test
+bb test --vars spectre.cli-test/spec-test
 ```
 
-You can also select by test metadata with `:includes`/`:excludes`, e.g. `bb test :excludes '[:clipboard]'` to skip the real-clipboard test in E2.
+You can also select by test metadata with `--includes`/`--excludes`, e.g. `bb test --excludes :clipboard` to skip the real-clipboard test in E2.
 
 ## E1
 
@@ -36,7 +36,7 @@ Read through `src/spectre/core.clj` before doing anything else, it is the founda
 
 There is also `spectre.scrypt-ffi`, an alternative to `spectre.scrypt` that calls into libsodium directly via Babashka's FFI support instead of shelling out to the `openssl` binary. It is not wired in by default (`core.clj` requires `spectre.scrypt`, with the FFI require commented out above it). If you have libsodium installed and a Babashka build with FFI support, try swapping the two requires in `core.clj` and confirming the same tests still pass, i.e. the two scrypt implementations agree byte-for-byte. Each namespace also has its own `comment` block with a known input/output pair you can check directly at the REPL.
 
-Run just this namespace while you work with `bb test :nses spectre.core-test`
+Run just this namespace while you work with `bb test --nses spectre.core-test`
 
 ## E2
 
@@ -51,13 +51,13 @@ Run just this namespace while you work with `bb test :nses spectre.core-test`
 Get those two passing first:
 
 ```
-bb test :nses spectre.clipboard-test :excludes '[:clipboard]'
+bb test --nses spectre.clipboard-test --excludes :clipboard
 ```
 
 There is a third test, `real-clipboard-test`, tagged `^:clipboard`, that exercises your actual system clipboard. It only runs when `SPECTRE_CLIPBOARD_TEST` is set.
 
 ```
-SPECTRE_CLIPBOARD_TEST=1 bb test :nses spectre.clipboard-test
+SPECTRE_CLIPBOARD_TEST=1 bb test --nses spectre.clipboard-test
 ```
 
 ## E3
@@ -80,7 +80,7 @@ Four functions to write:
 `src/spectre/cli.clj` wires `spectre.core`, `spectre.clipboard`, `spectre.db` and `spectre.identicon` into the `pw` command. Four TODOs, make `test/spectre/cli_test.clj` pass:
 
 ```
-bb test :nses spectre.cli-test
+bb test --nses spectre.cli-test
 ```
 
 - `known-sites`: the sorted list of sites already in `db.edn`, for CLI completion. Load the db (via `spectre.db/load-db`) and pull the keys out of `:sites`.
@@ -97,7 +97,7 @@ bb test :nses spectre.cli-test
 specter.tui2 skeleton, built on [charm.clj](https://github.com/TimoKramer/charm.clj), a Bubble Tea-style TUI toolkit.
 `spectre.tui` next to it is a from-scratch version of the same UI built directly on JLine, kept as a reference if you want similar behaviour without a TUI framework.
 
-`test/spectre/tui2_test.clj` drives `tui2/update-fn` and `tui2/view` directly, so you can make all of it pass without ever running the TUI. Get there first with `bb test :nses spectre.tui2-test`, then use the REPL workflow below to see it live.
+`test/spectre/tui2_test.clj` drives `tui2/update-fn` and `tui2/view` directly, so you can make all of it pass without ever running the TUI. Get there first with `bb test --nses spectre.tui2-test`, then use the REPL workflow below to see it live.
 
 TODOs in `src/spectre/tui2.clj`:
 
