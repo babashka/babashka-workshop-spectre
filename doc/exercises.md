@@ -1,9 +1,5 @@
 # Exercises
 
-TODO:
-
-- MB: write slides for walkthrough of core libs (including FFI) in pitch deck
-
 Run all tests at any point with:
 
 ```
