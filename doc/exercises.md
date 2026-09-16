@@ -132,9 +132,23 @@ Notes:
 
 ## E6
 
-No skeleton or tests here, this exercise is about packaging and running.
+Package and run the CLI.
 
-- Install [bbin](https://github.com/babashka/bbin) if you have not already, then install `pw` from this repo with it, e.g. `bbin install . --main-opts '["-x" "spectre.cli/generate"]'` (or point it at the `pw` task with `--as pw`: check bbin's own README for the exact invocation it wants for a `deps.edn`/`bb.edn`-based project rather than a single script). Confirm you can now run `pw example.com` from any directory, without `cd`-ing into this repo first.
-- bbin is for you want a command installed globally on your `PATH`.
-  For something lighter, a script you keep in a project folder and run with `bb`, without installing anything system-wide: a relative `bb.edn` next to the script is often enough: a `bb.edn`'s `:paths`/`:deps` resolve relative to wherever that `bb.edn` file lives, so a small script directory with its own `bb.edn` (pointing `:paths` back at this repo's `src`) gets the same dependencies without a global install.
-  Try building one for a single site lookup, e.g. a two-line script that just calls `spectre.cli/generate` with a hardcoded site.
+- Install [bbin](https://github.com/babashka/bbin) if you have not already.
+  Create `deps.edn` with `:paths ["src"]` and the `charm.clj` dependency.
+  Run:
+
+  ```sh
+  bbin install . --as pw --main-opts '["-m" "spectre.cli/-main"]'
+  ```
+
+  Use `-main` to support `pw --help`.
+  Run `pw --help` and `pw example.com` from another directory.
+
+  To store the script name and options, add `:bbin/bin {pw {:main-opts ["-m" "spectre.cli/-main"]}}` to `bb.edn`.
+  Then run `bbin install .`.
+- Create a script directory with its own `bb.edn`.
+  A `bb.edn` next to the invoked file is respected, see [Script-adjacent bb.edn](https://book.babashka.org/#_script_adjacent_bb_edn) in the babashka book.
+  Point `:paths` at this repo's `src` and add the dependencies.
+  Write a script that calls `spectre.cli/generate` with a fixed site.
+  Run it with `bb`.
