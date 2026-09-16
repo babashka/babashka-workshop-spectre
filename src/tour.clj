@@ -5,6 +5,8 @@
 ;;;; babashka.fs
 ;;
 ;; Use strings, java.io.File or java.nio.file.Path for paths.
+;;
+;; https://github.com/babashka/fs - API: https://github.com/babashka/fs/blob/master/API.md
 
 (require '[babashka.fs :as fs])
 
@@ -49,6 +51,8 @@
 ;;;; babashka.process
 ;;
 ;; Run programs on PATH. For Windows shell builtins, use cmd /c.
+;;
+;; https://github.com/babashka/process - API: https://github.com/babashka/process/blob/master/API.md
 
 (require '[babashka.process :as p])
 
@@ -98,6 +102,8 @@
 ;;;; babashka.cli
 ;;
 ;; Parse command line arguments into a map.
+;;
+;; https://github.com/babashka/cli - API: https://github.com/babashka/cli/blob/main/API.md
 
 (require '[babashka.cli :as cli])
 
@@ -125,14 +131,26 @@
 
   (println (cli/format-opts {:spec spec}))
 
-  ;; dispatch selects the longest matching :cmds. [] is the fallback.
-  (def table
-    [{:cmds ["add"] :fn (fn [m] [:add (:opts m)]) :args->opts [:site]}
-     {:cmds [] :fn (fn [m] [:help (:opts m)])}])
+  ;; dispatch selects a command from a tree. :cmd maps a name to a child node,
+  ;; which may have a :cmd of its own. The deepest match wins.
+  (def tree
+    {:cmd {"add" {:doc "Add a site"
+                  :spec spec
+                  :args->opts [:site]
+                  :fn (fn [m] [:add (:opts m)])}
+           "site" {:doc "Manage sites"
+                   :cmd {"rm" {:args->opts [:site] :fn (fn [m] [:rm (:opts m)])}}}}})
 
-  (cli/dispatch table ["add" "example.com" "--length" "20"] {:spec spec})
+  (cli/dispatch tree ["add" "example.com" "--length" "20"] {:prog "spectre" :help true})
+  ;; => [:add {:length 20 :site "example.com"}]
 
-  ;; :args->opts maps positional arguments to named options.
+  (cli/dispatch tree ["site" "rm" "example.com"] {:prog "spectre" :help true})
+  ;; => [:rm {:site "example.com"}]
+
+  ;; :help true wires up --help and -h at every level, built from :doc and the
+  ;; spec's :desc. No help command to write, no usage string to keep in sync.
+  (cli/dispatch tree ["--help"] {:prog "spectre" :help true})
+  (cli/dispatch tree ["add" "--help"] {:prog "spectre" :help true})
 
   ;; In bb.edn, :exec-fn receives parsed options. :exec-args sets defaults.
   )
@@ -140,6 +158,8 @@
 ;;;; babashka.ffi
 ;;
 ;; Call C functions.
+;;
+;; https://github.com/babashka/ffi - API: https://github.com/babashka/ffi/blob/main/API.md
 
 (require '[babashka.ffi :as ffi])
 
