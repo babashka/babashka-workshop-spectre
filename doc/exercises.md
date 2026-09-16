@@ -32,11 +32,11 @@ Read through `src/spectre/core.clj` before doing anything else, it is the founda
 - Derive with a different `variant` (`:login`, `:answer`) and check that changes the result too.
 - Derive with a different `template` (e.g. `:maximum`, `:pin`, `:short`) and check the length/shape looks right for that template.
 - Bump `:counter` and check you get a different password again.
-- Two calls with exactly the same arguments should always return the exact same password proving Spectre is stateless
+- Two calls with exactly the same arguments should always return the exact same password, proving Spectre is stateless.
 
 There is also `spectre.scrypt-ffi`, an alternative to `spectre.scrypt` that calls into libsodium directly via Babashka's FFI support instead of shelling out to the `openssl` binary. It is not wired in by default (`core.clj` requires `spectre.scrypt`, with the FFI require commented out above it). If you have libsodium installed and a Babashka build with FFI support, try swapping the two requires in `core.clj` and confirming the same tests still pass, i.e. the two scrypt implementations agree byte-for-byte. Each namespace also has its own `comment` block with a known input/output pair you can check directly at the REPL.
 
-Run just this namespace while you work with `bb test --nses spectre.core-test`
+Run just this namespace while you work with `bb test --nses spectre.core-test`.
 
 ## E2
 
@@ -75,6 +75,8 @@ Four functions to write:
 - `site-settings`: look up one site's settings map in `db`, or `nil` when it is not there yet.
 - `merge-site!`: merge `settings` into the existing entry for `site` (so a partial update, e.g. just a new `:counter`, does not wipe the other keys), save the result with `save-db!`, and return the updated db.
 
+There is no test namespace of its own here. E4 and E5 both read `db.edn`, so `spectre.cli-test`, `spectre.tui2-test` and `spectre.tui-test` are what check this exercise.
+
 ## E4
 
 `src/spectre/cli.clj` wires `spectre.core`, `spectre.clipboard`, `spectre.db` and `spectre.identicon` into the `pw` command. Four TODOs, make `test/spectre/cli_test.clj` pass:
@@ -94,8 +96,9 @@ bb test --nses spectre.cli-test
 
 ## E5
 
-specter.tui2 skeleton, built on [charm.clj](https://github.com/TimoKramer/charm.clj), a Bubble Tea-style TUI toolkit.
+`spectre.tui2` is a skeleton, built on [charm.clj](https://github.com/TimoKramer/charm.clj), a Bubble Tea-style TUI toolkit.
 `spectre.tui` next to it is a from-scratch version of the same UI built directly on JLine, kept as a reference if you want similar behaviour without a TUI framework.
+It is written for you, but it reads `db.edn` through E3, so two of its tests fail until E3 is done.
 
 `test/spectre/tui2_test.clj` drives `tui2/update-fn` and `tui2/view` directly, so you can make all of it pass without ever running the TUI. Get there first with `bb test --nses spectre.tui2-test`, then use the REPL workflow below to see it live.
 
