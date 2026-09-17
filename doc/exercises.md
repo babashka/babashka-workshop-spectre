@@ -139,17 +139,20 @@ Package and run the CLI.
 
 - Install [bbin](https://github.com/babashka/bbin) if you have not already.
   Create `deps.edn` with `:paths ["src"]` and the `charm.clj` dependency.
-  Run:
+  Add to `bb.edn`:
 
-  ```sh
-  bbin install . --as pw --main-opts '["-m" "spectre.cli/-main"]'
+  ```clojure
+  :bbin/bin {pw {:main-opts ["-m" "spectre.cli/-main"]}}
   ```
 
-  This installs `-main`, which goes through `cli/dispatch` and gives you `pw --help`.
-  Run `pw --help` and `pw example.com` from another directory to test it out.
+  This names the script `pw` and installs `-main`, which goes through `cli/dispatch` and gives you `pw --help`.
+  Then:
 
-  To store the script name and options, add `:bbin/bin {pw {:main-opts ["-m" "spectre.cli/-main"]}}` to `bb.edn`.
-  Then run `bbin install .`.
+  ```sh
+  bbin install .
+  ```
+
+  Run `pw --help` and `pw example.com` from another directory to test it out.
 - Create a script directory with its own `bb.edn`.
   A `bb.edn` next to the invoked file is respected, see [Script-adjacent bb.edn](https://book.babashka.org/#_script_adjacent_bb_edn) in the babashka book.
   Point `:paths` at this repo's `src` and add the dependencies.

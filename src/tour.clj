@@ -50,7 +50,7 @@
 
 ;;;; babashka.process
 ;;
-;; Run programs on PATH. For Windows shell builtins, use cmd /c.
+;; Run programs on PATH.
 ;;
 ;; https://github.com/babashka/process - API: https://github.com/babashka/process/blob/master/API.md
 
