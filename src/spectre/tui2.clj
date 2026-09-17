@@ -91,6 +91,7 @@
                                                      :value (or (get env "SPECTRE_MASTER") "")
                                                      :focused false)
                 :identity-field 0
+                :field 0
                 :mode :search
                 :term-height 24
                 :input (text-input/text-input :prompt "Search: "

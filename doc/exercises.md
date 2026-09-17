@@ -104,7 +104,7 @@ Complete E3 before running `spectre.tui-test`, since its search and edit tests r
 
 TODOs in `src/spectre/tui2.clj`:
 
-- `matches`: filter `sites` to those containing `query`, case-insensitively, with prefix matches sorted before matches in the middle of the name (see `search-test`).
+- `matches`: filter `sites` to those containing `query`, case-insensitively, ranked by where the query appears in the name: a hit at the start comes before a hit further along (see `search-test`).
 - `open-selected`: when `enter` is pressed on the search screen, switch `:mode` to `:edit`, record the selected `:site`, and load its `:draft` settings from `db/site-settings` when the site is already in `db.edn`, falling back to `defaults` for a new one (see `edit-test`).
 - `cycle-value`: step to the next or previous value in `values`, wrapping around at either end.
 - `adjust`: use `cycle-value` for fields that declare `:values` (`template`, `variant`); for `:counter`, increment or decrement, never going below 1.
