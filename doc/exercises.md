@@ -155,8 +155,13 @@ Package and run the CLI.
   ```
 
   Run `pw --help` and `pw example.com` from another directory to test it out.
-- Create a script directory with its own `bb.edn`.
-  A `bb.edn` next to the invoked file is respected, see [Script-adjacent bb.edn](https://book.babashka.org/#_script_adjacent_bb_edn) in the babashka book.
-  Point `:paths` at this repo's `src` and add the dependencies.
-  Write a script that calls `spectre.cli/generate` with a fixed site.
-  Run it with `bb`.
+- For local usage, a script with its own `bb.edn` next to it is lighter than an install.
+  The `bb.edn` in this repo only applies while you run `bb` from this directory, so a script that lives elsewhere carries its own, see [Script-adjacent bb.edn](https://book.babashka.org/#_script_adjacent_bb_edn) in the babashka book.
+  Make a directory anywhere with this `bb.edn`, pointing `:local/root` at this repo:
+
+  ```clojure
+  {:deps {spectre/spectre {:local/root "/path/to/babashka-workshop-spectre"}}}
+  ```
+
+  Next to it, write a script that calls `spectre.cli/generate` with a fixed site.
+  Run it with `bb` from another directory.
