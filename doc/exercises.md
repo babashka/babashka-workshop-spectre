@@ -135,33 +135,43 @@ Notes:
 
 ## E6
 
-Package and run the CLI.
+Run the CLI from another directory using each of these methods.
 
-- Install [bbin](https://github.com/babashka/bbin) if you have not already.
-  Create `deps.edn` with `:paths ["src"]` and the `charm.clj` dependency.
-  Add to `bb.edn`:
+- Create a launcher that uses this repo's `bb.edn`.
+  `--config` resolves `:paths` and `:deps` relative to that file.
+
+  On macOS or Linux, save this as `pw` in a directory on your `PATH` and run `chmod +x` on the file:
+
+  ```sh
+  #!/bin/sh
+  bb --config "/path/to/babashka-workshop-spectre/bb.edn" -m spectre.cli/-main "$@"
+  ```
+
+  On Windows, save this as `pw.cmd` in a directory on your `PATH`:
+
+  ```bat
+  @echo off
+  bb --config "C:\path\to\babashka-workshop-spectre\bb.edn" -m spectre.cli/-main %*
+  ```
+
+  Replace the config path with your checkout's path.
+  You can also use the `pw` task instead of `-m spectre.cli/-main`.
+  This example uses `-main` to match the bbin configuration below.
+  Test with `pw --help` and `pw example.com` from another directory.
+
+- Install a launcher with [bbin](https://github.com/babashka/bbin).
+  Create `deps.edn` in this repo with `:paths ["src"]` and the `charm.clj` dependency from `bb.edn`.
+  bbin uses `deps.edn` to resolve the repo as a `:local/root` dependency.
+  Add this entry to the repo's `bb.edn`:
 
   ```clojure
   :bbin/bin {pw {:main-opts ["-m" "spectre.cli/-main"]}}
   ```
 
-  This names the script `pw` and installs `-main`, which goes through `cli/dispatch` and gives you `pw --help`.
-  `deps.edn` is for the classpath: bbin resolves this repo as a `:local/root` dependency.
-  `:bbin/bin` is bbin's own config, and it only reads that from `bb.edn`.
-  Then:
+  Install `pw` from the repo directory:
 
   ```sh
   bbin install .
   ```
 
-  Run `pw --help` and `pw example.com` from another directory to test it out.
-- For local usage, a script with its own `bb.edn` next to it is lighter than an install.
-  The `bb.edn` in this repo only applies while you run `bb` from this directory, so a script that lives elsewhere carries its own, see [Script-adjacent bb.edn](https://book.babashka.org/#_script_adjacent_bb_edn) in the babashka book.
-  Make a directory anywhere with this `bb.edn`, pointing `:local/root` at this repo:
-
-  ```clojure
-  {:deps {spectre/spectre {:local/root "/path/to/babashka-workshop-spectre"}}}
-  ```
-
-  Next to it, write a script that calls `spectre.cli/generate` with a fixed site.
-  Run it with `bb` from another directory.
+  Test with `pw --help` and `pw example.com` from another directory.
