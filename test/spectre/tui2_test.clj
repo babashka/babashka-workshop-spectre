@@ -42,7 +42,7 @@
       (is (= 1 (item-list/selected-index (:list s)))))))
 
 ;; TODO: passes once spectre.tui2/open-selected and adjust are written.
-;; Needs spectre.db/site-settings from E2 as well, for the stored settings
+;; Needs spectre.db/site-settings from E3 as well, for the stored settings
 (deftest edit-test
   (d/deflet
     (def editing (-> (start) (press "g") (press :enter)))
