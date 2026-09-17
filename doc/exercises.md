@@ -145,7 +145,7 @@ Package and run the CLI.
   bbin install . --as pw --main-opts '["-m" "spectre.cli/-main"]'
   ```
 
-  Use `-main` to support `pw --help`.
+  This installs `-main`, which goes through `cli/dispatch` and gives you `pw --help`.
   Run `pw --help` and `pw example.com` from another directory.
 
   To store the script name and options, add `:bbin/bin {pw {:main-opts ["-m" "spectre.cli/-main"]}}` to `bb.edn`.
