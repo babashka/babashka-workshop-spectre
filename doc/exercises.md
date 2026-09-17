@@ -146,6 +146,8 @@ Package and run the CLI.
   ```
 
   This names the script `pw` and installs `-main`, which goes through `cli/dispatch` and gives you `pw --help`.
+  `deps.edn` is for the classpath: bbin resolves this repo as a `:local/root` dependency.
+  `:bbin/bin` is bbin's own config, and it only reads that from `bb.edn`.
   Then:
 
   ```sh
