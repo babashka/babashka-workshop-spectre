@@ -34,7 +34,7 @@ Read through `src/spectre/core.clj` before doing anything else, it is the founda
 - Bump `:counter` and check you get a different password again.
 - Check that two calls with the same arguments return the same password.
 
-There is also `spectre.scrypt-ffi`, an alternative to `spectre.scrypt` that calls into libsodium directly via Babashka's FFI support instead of shelling out to the `openssl` binary. It is not wired in by default (`core.clj` requires `spectre.scrypt`, with the FFI require commented out above it). If you have libsodium installed and a Babashka build with FFI support, try swapping the two requires in `core.clj` and confirming the same tests still pass, i.e. the two scrypt implementations agree byte-for-byte. Each namespace also has its own `comment` block with a known input/output pair you can check directly at the REPL.
+There is also `spectre.scrypt-ffi`, an alternative to `spectre.scrypt` that calls into libsodium directly via Babashka's FFI support instead of shelling out to the `openssl` binary. It is not wired in by default (`core.clj` requires `spectre.scrypt`, with the FFI require commented out below it). If you have libsodium installed and a Babashka build with FFI support, try swapping the two requires in `core.clj` and confirming the same tests still pass, i.e. the two scrypt implementations agree byte-for-byte. Each namespace also has its own `comment` block with a known input/output pair you can check directly at the REPL.
 
 Run just this namespace while you work with `bb test --nses spectre.core-test`.
 
@@ -44,7 +44,7 @@ Run just this namespace while you work with `bb test --nses spectre.core-test`.
 
 - `tool`: return the first available clipboard command from the `tools` table already defined at the top of the file (`pbcopy`, `wl-copy`, `xclip`, `xsel`, `clip`), or `nil` if none of them exist on this machine. Use `babashka.fs/which` to check whether a command exists on the `PATH`.
 - `copy!`: run the given command (defaulting to `(tool)`) and write `s` to its **stdin**.
-  Use `babashka.process/process` (or `sh`) with `:in s`.
+  Use `babashka.process/shell` (or `sh`) with `:in s`. `process` does not wait for the command to exit.
   Return the command used, or `nil` when there is none to fall back to.
 
 `test/spectre/clipboard_test.clj` drives `copy!` with a fake "clipboard" command that just writes stdin to a file, so `copy-test` and `no-tool-test` run everywhere without touching your real clipboard.
@@ -62,20 +62,22 @@ SPECTRE_CLIPBOARD_TEST=1 bb test --nses spectre.clipboard-test
 
 ## E3
 
-`src/spectre/db.clj` stores per-site settings (`:counter`, `:template`, `:variant`) in a flat EDN file, `db.edn` by default, shaped like:
+`src/spectre/db.clj` stores per-site settings (`:counter`, `:template`, `:variant`) in a flat EDN file, shaped like:
 
 ```clojure
 {:sites {"example.com" {:counter 1 :template :long :variant :password}}}
 ```
 
+`default-path` is `~/.config/spectre/db.edn`. Set `SPECTRE_DB` to override it.
+
 Four functions to write:
 
-- `load-db`: read `path` and `edn/read-string` it, or return an empty db (`{:sites {}}`) when the file does not exist yet. Use `babashka.fs/exists?` to check first.
-- `save-db!`: write `db` back to `path` as EDN.
+- `load-db`: read `path` and `edn/read-string` it, or return an empty db (`{}`) when the file does not exist yet. Use `babashka.fs/exists?` to check first.
+- `save-db!`: create the parent directory of `path` with `fs/create-dirs`, then write `db` back to `path` as EDN.
 - `site-settings`: look up one site's settings map in `db`, or `nil` when it is not there yet.
 - `merge-site!`: merge `settings` into the existing entry for `site` (so a partial update, e.g. just a new `:counter`, does not wipe the other keys), save the result with `save-db!`, and return the updated db.
 
-Check this exercise with `spectre.cli-test`, `spectre.tui2-test` and `spectre.tui-test`, which read `db.edn`.
+Check this exercise with `bb test --nses spectre.tui-test`. `spectre.cli-test` and `spectre.tui2-test` also use these functions, but they need E4 and E5 first.
 
 ## E4
 
@@ -88,7 +90,7 @@ bb test --nses spectre.cli-test
 - `known-sites`: the sorted list of sites already in `db.edn`, for CLI completion. Load the db (via `spectre.db/load-db`) and pull the keys out of `:sites`.
 - `spec`: currently only declares `:site` and `:print`. Add `:name`, `:counter`, `:template` and `:variant`, matching what `spec-test` expects:
   every flag needs a single-letter `:alias` (`-u`, `-c`, `-t`, `-v`) and coerces to the right type (`:counter` to a number, `:template` and `:variant` to keywords).
-  For the `:site` positional, wire `known-sites` in as the completion source (see `babashka.cli`'s docs for how a spec entry offers completions).
+  For the `:site` positional, wire `known-sites` in as the spec entry's `:complete-fn`.
 - `site-opts`: currently just merges `defaults` with the explicit flags, ignoring the db entirely.
   Change it to read `db.edn` (`db/load-db` with the given `opts`, which carries `:path` in tests), prefer that stored setting over `defaults`, then let an explicit flag win over that.
   When the effective settings differ from what is stored (a new site, or a flag that overrides a stored value), warn on stderr and save with `db/merge-site!`.
