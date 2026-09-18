@@ -3,8 +3,10 @@
   (:refer-clojure :exclude [derive])
   (:require
    [clojure.string :as str]
-   ; [spectre.scrypt-ffi :as scrypt]
-   [spectre.scrypt :as scrypt])
+   ;; comment out one and uncomment the other to swap scrypt implementations
+   [spectre.scrypt :as scrypt]
+   ;; [spectre.scrypt-ffi :as scrypt]
+   )
   (:import
    [java.io ByteArrayOutputStream]
    [java.nio ByteBuffer]

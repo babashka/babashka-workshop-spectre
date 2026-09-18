@@ -4,7 +4,9 @@
 
 (defonce ^:private sodium
   (ffi/load-library {:linux ["libsodium.so.26" "libsodium.so"]
-                     :mac ["/opt/homebrew/opt/libsodium/lib/libsodium.26.dylib"]
+                     ;; Homebrew on Apple silicon, then on Intel
+                     :mac ["/opt/homebrew/opt/libsodium/lib/libsodium.26.dylib"
+                           "/usr/local/opt/libsodium/lib/libsodium.26.dylib"]
                      :windows ["libsodium-26.dll"]}))
 
 (defonce ^:private _init

@@ -5,7 +5,11 @@
    [clojure.edn :as edn]
    [clojure.pprint :as pp]))
 
-(def default-path "db.edn")
+(def default-path
+  "Where the sites live when no :path is given. Absolute, so `pw` finds the
+   same sites from every directory. SPECTRE_DB overrides it."
+  (or (System/getenv "SPECTRE_DB")
+      (str (fs/path (fs/xdg-config-home "spectre") "db.edn"))))
 
 (defn load-db
   ([] (load-db {}))
