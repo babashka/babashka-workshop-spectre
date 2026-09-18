@@ -2,3 +2,6 @@
 .lsp/.cache
 .clj-kondo/.cache
 db.edn
+
+# created in E6, for bbin
+deps.edn

@@ -79,7 +79,9 @@ Four functions to write:
 - `site-settings`: look up one site's settings map in `db`, or `nil` when it is not there yet.
 - `merge-site!`: merge `settings` into the existing entry for `site` (so a partial update, e.g. just a new `:counter`, does not wipe the other keys), save the result with `save-db!`, and return the updated db.
 
-Check this exercise with `spectre.cli-test`, `spectre.tui2-test` and `spectre.tui-test`, which read `db.edn`.
+Check this exercise with `bb test --nses spectre.tui-test`. `spectre.cli-test` and
+`spectre.tui2-test` use these functions too, but they only go green once E4 and E5
+are done.
 
 ## E4
 
