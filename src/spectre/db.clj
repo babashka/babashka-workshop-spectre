@@ -6,8 +6,7 @@
    [clojure.pprint :as pp]))
 
 (def default-path
-  "Where the sites live when no :path is given. Absolute, so `pw` finds the
-   same sites from every directory. SPECTRE_DB overrides it."
+  "The SPECTRE_DB environment variable, or ~/.config/spectre/db.edn."
   (or (System/getenv "SPECTRE_DB")
       (str (fs/path (fs/xdg-config-home "spectre") "db.edn"))))
 

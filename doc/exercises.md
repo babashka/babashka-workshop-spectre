@@ -44,9 +44,7 @@ Run just this namespace while you work with `bb test --nses spectre.core-test`.
 
 - `tool`: return the first available clipboard command from the `tools` table already defined at the top of the file (`pbcopy`, `wl-copy`, `xclip`, `xsel`, `clip`), or `nil` if none of them exist on this machine. Use `babashka.fs/which` to check whether a command exists on the `PATH`.
 - `copy!`: run the given command (defaulting to `(tool)`) and write `s` to its **stdin**.
-  Use `babashka.process/shell` (or `sh`) with `:in s`. Both wait for the
-  command to exit; `process` does not, so the value may still be in flight
-  when `copy!` returns.
+  Use `babashka.process/shell` (or `sh`) with `:in s`. `process` does not wait for the command to exit.
   Return the command used, or `nil` when there is none to fall back to.
 
 `test/spectre/clipboard_test.clj` drives `copy!` with a fake "clipboard" command that just writes stdin to a file, so `copy-test` and `no-tool-test` run everywhere without touching your real clipboard.
@@ -70,18 +68,16 @@ SPECTRE_CLIPBOARD_TEST=1 bb test --nses spectre.clipboard-test
 {:sites {"example.com" {:counter 1 :template :long :variant :password}}}
 ```
 
-`default-path` puts that file in `~/.config/spectre/db.edn` (`SPECTRE_DB` overrides it), so `pw` finds the same sites from every directory. The tests pass their own `:path`.
+`default-path` is `~/.config/spectre/db.edn`. Set `SPECTRE_DB` to override it.
 
 Four functions to write:
 
 - `load-db`: read `path` and `edn/read-string` it, or return an empty db (`{}`) when the file does not exist yet. Use `babashka.fs/exists?` to check first.
-- `save-db!`: write `db` back to `path` as EDN. The config directory may not exist yet, so `fs/create-dirs` on the `fs/parent` of `path` first.
+- `save-db!`: create the parent directory of `path` with `fs/create-dirs`, then write `db` back to `path` as EDN.
 - `site-settings`: look up one site's settings map in `db`, or `nil` when it is not there yet.
 - `merge-site!`: merge `settings` into the existing entry for `site` (so a partial update, e.g. just a new `:counter`, does not wipe the other keys), save the result with `save-db!`, and return the updated db.
 
-Check this exercise with `bb test --nses spectre.tui-test`. `spectre.cli-test` and
-`spectre.tui2-test` use these functions too, but they only go green once E4 and E5
-are done.
+Check this exercise with `bb test --nses spectre.tui-test`. `spectre.cli-test` and `spectre.tui2-test` also use these functions, but they need E4 and E5 first.
 
 ## E4
 
@@ -94,7 +90,7 @@ bb test --nses spectre.cli-test
 - `known-sites`: the sorted list of sites already in `db.edn`, for CLI completion. Load the db (via `spectre.db/load-db`) and pull the keys out of `:sites`.
 - `spec`: currently only declares `:site` and `:print`. Add `:name`, `:counter`, `:template` and `:variant`, matching what `spec-test` expects:
   every flag needs a single-letter `:alias` (`-u`, `-c`, `-t`, `-v`) and coerces to the right type (`:counter` to a number, `:template` and `:variant` to keywords).
-  For the `:site` positional, wire `known-sites` in as the completion source: `babashka.cli` calls a spec entry's `:complete-fn` with a map and takes the candidates it returns.
+  For the `:site` positional, wire `known-sites` in as the spec entry's `:complete-fn`.
 - `site-opts`: currently just merges `defaults` with the explicit flags, ignoring the db entirely.
   Change it to read `db.edn` (`db/load-db` with the given `opts`, which carries `:path` in tests), prefer that stored setting over `defaults`, then let an explicit flag win over that.
   When the effective settings differ from what is stored (a new site, or a flag that overrides a stored value), warn on stderr and save with `db/merge-site!`.
