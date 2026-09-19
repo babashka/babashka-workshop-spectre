@@ -1,5 +1,8 @@
 # Exercises
 
+The initial test suite is expected to fail. Run each exercise's tests as you complete it.
+Tests use temporary databases or in-memory fixtures, not your configured database.
+
 Run all tests at any point with:
 
 ```
@@ -76,7 +79,7 @@ TODOs, make `test/spectre/db_test.clj` pass:
 bb test --nses spectre.db-test
 ```
 
-- `load-db`: when `path` exists, read it and `edn/read-string` it. Use `babashka.fs/exists?` to check first.
+- `load-db`: when `path` exists, read it and `edn/read-string` it. Use `babashka.fs/exists?` to check first. Return `{:sites {}}` when the file is missing.
 - `save-db!`: create the parent directory of `path` with `fs/create-dirs`, then write `db` back to `path` as EDN.
 - `site-settings`: look up one site's settings map in `db`, or `nil` when it is not there yet.
 - `merge-site!`: merge `settings` into the existing entry for `site` (so a partial update, e.g. just a new `:counter`, does not wipe the other keys), save the result with `save-db!`, and return the updated db.
@@ -98,24 +101,44 @@ bb test --nses spectre.cli-test
 - `site-opts`: currently just merges `defaults` with the explicit flags, ignoring the db entirely.
   Change it to read `db.edn` (`db/load-db` with the given `opts`, which carries `:path` in tests), prefer that stored setting over `defaults`, then let an explicit flag win over that.
   When the effective settings differ from what is stored (a new site, or a flag that overrides a stored value), warn on stderr and save with `db/merge-site!`.
-- A template outside the known set (`spectre.core/templates`) should be rejected by the CLI parser itself: `spec-test`'s last `testing` block checks this, so make sure `:template`'s coercion/validation catches it rather than failing later inside `derive`.
+- A template outside the known set (`spectre.core/templates`) should be rejected by the CLI parser itself: `spec-test`'s last `testing` block checks this. Use `:coerce :keyword` and a `:validate` predicate in the template spec entry. A set of valid keywords can serve as the predicate.
 
 ## E5
 
 Complete `spectre.tui2`, built on [charm.clj](https://github.com/TimoKramer/charm.clj), a Bubble Tea-style TUI toolkit.
 See `spectre.tui` for a complete implementation of the same UI using JLine.
-Complete E3 before running `spectre.tui-test`, since its search and edit tests require the database functions.
+Complete E3 first. Seeding and the TUI use its database functions.
 
-`test/spectre/tui2_test.clj` drives `tui2/update-fn` and `tui2/view` directly, so you can make all of it pass without ever running the TUI. Get there first with `bb test --nses spectre.tui2-test`, then use the REPL workflow below to see it live.
+Add example sites for searching and editing:
+
+```sh
+bb db:seed
+```
+
+This adds `google.com`, `mail.google.com` and `example.org` when they are missing.
+It preserves existing sites and their settings. It uses `SPECTRE_DB` when set,
+or the default database path. You can run it again at any time.
+
+Run the REPL smoke test below before filling in the TODOs.
+Then use `bb test --nses spectre.tui2-test --excludes :optional` while you work.
+The tests drive `tui2/update-fn` and `tui2/view` with their own fixtures.
+They do not use your database or require `bb db:seed`.
 
 TODOs in `src/spectre/tui2.clj`:
 
 - `matches`: filter `sites` to those containing `query`, case-insensitively, ranked by where the query appears in the name: a hit at the start comes before a hit further along (see `search-test`, which also asks you to add one assertion of your own on `matches`).
-- `open-selected`: when `enter` is pressed on the search screen, switch `:mode` to `:edit`, record the selected `:site`, and load its `:draft` settings from `db/site-settings` when the site is already in `db.edn`, falling back to `defaults` for a new one (see `edit-test`).
+- `open-selected`: when `enter` is pressed on the search screen, switch `:mode` to `:edit`, record the selected `:site`, and merge `defaults` with its stored settings from `db/site-settings` to populate `:draft` (see `edit-test`). With no selection, leave the state unchanged. The TUI edits existing sites. Use the CLI or `bb db:seed` to add sites.
 - `cycle-value`: step to the next or previous value in `values`, wrapping around at either end. A value that is not in `values` starts at the first one (see `cycle-value-test`).
 - `adjust`: use `cycle-value` for fields that declare `:values` (`template`, `variant`); for `:counter`, increment or decrement, never going below 1.
 - `figure` (optional, for whoever is done early): the identicon (`spectre.identicon/identicon-of`) for whatever is currently typed into `:name-input`/`:master-input` on the identity screen, or `nil` while either is still empty.
   `figure-test` checks it updates live as you type and that the search screen picks up the same figure once it exists.
+
+The optional `figure-test` is tagged `:optional`. Run it with
+`bb test --nses spectre.tui2-test` when you complete `figure`.
+Use `bb test --excludes :optional` to check all required exercises.
+
+After completing the TODOs, select a site in the TUI, change its counter,
+and press Enter to save. Reopen the site and check that the counter was saved.
 
 ### Change the TUI while it runs
 
@@ -126,11 +149,11 @@ Do this smoke test before you write any code:
 
 1. Start the TUI with `bb tui2 --nrepl`.
 1. Connect your editor to port 1667.
-1. Open `src/spectre/tui2.clj`. In `search-view`, change the text `"no sites in db.edn yet"` to `"REPL WORKS"`. Then evaluate the whole `search-view` form.
-1. Press a key in the TUI. The line below the search prompt shows the new text. The rest of the screen does not change.
+1. Open `src/spectre/tui2.clj`. In `search-view`, insert `"REPL WORKS\n"` as the first argument of the outer `str` call. Then evaluate the whole `search-view` form.
+1. Press a key in the TUI. The new text appears above the search prompt.
 1. Undo the change. Then evaluate the form again.
 
-If the text does not appear, your editor is connected to another process.
+If the text does not appear, check that evaluation succeeded and your editor is connected to port 1667.
 
 Notes:
 
@@ -179,6 +202,9 @@ Run the CLI from another directory using each of these methods.
   ```sh
   bbin install .
   ```
+
+  On macOS or Linux, run `command -v pw` first to check that your shell uses
+  the bbin launcher rather than the manual launcher from the previous step.
 
   Test with `pw --help` and `pw example.com` from another directory.
 

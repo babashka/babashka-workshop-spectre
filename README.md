@@ -17,6 +17,7 @@ Install the following:
     See https://github.com/babashka/cli#completions for your specific shell.
 - Java 22 or later (17 works fine, but 22 is needed for FFI).
 - [Clojure CLI](https://clojure.org/guides/install_clojure) (optional).
+- [bbin](https://github.com/babashka/bbin#installation) for E6.
 - OpenSSL 3 or later, unless you use the FFI implementation.
 - [libsodium](https://libsodium.gitbook.io/doc/installation) for the FFI implementation
 

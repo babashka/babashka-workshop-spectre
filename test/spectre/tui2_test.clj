@@ -94,7 +94,7 @@
 
 ;; TODO, optional: passes once spectre.tui2/figure gives the identicon for the
 ;; name and master password on the identity screen
-(deftest figure-test
+(deftest ^:optional figure-test
   (d/deflet
     (def s (-> (tui2/state db {}) (press :tab) (type-in "JohnDoe") (press :down) (type-in "hunter2")))
     (def expected (identicon/identicon-of "JohnDoe" "hunter2"))

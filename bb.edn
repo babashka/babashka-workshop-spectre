@@ -22,4 +22,6 @@
   tui {:doc "Browse and edit sites in db.edn"
        :exec-fn spectre.tui/browse}
   tui2 {:doc "Same as tui, built on charm.clj"
-        :exec-fn spectre.tui2/browse}}}
+        :exec-fn spectre.tui2/browse}
+  db:seed {:doc "Add missing example sites to the configured database"
+           :exec-fn spectre.seed/seed!}}}
