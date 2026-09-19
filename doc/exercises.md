@@ -1,5 +1,7 @@
 # Exercises
 
+Tests fail until you complete the exercises. They use temporary files and in-memory data.
+
 Run all tests at any point with:
 
 ```
@@ -98,24 +100,42 @@ bb test --nses spectre.cli-test
 - `site-opts`: currently just merges `defaults` with the explicit flags, ignoring the db entirely.
   Change it to read `db.edn` (`db/load-db` with the given `opts`, which carries `:path` in tests), prefer that stored setting over `defaults`, then let an explicit flag win over that.
   When the effective settings differ from what is stored (a new site, or a flag that overrides a stored value), warn on stderr and save with `db/merge-site!`.
-- A template outside the known set (`spectre.core/templates`) should be rejected by the CLI parser itself: `spec-test`'s last `testing` block checks this, so make sure `:template`'s coercion/validation catches it rather than failing later inside `derive`.
+- Reject unknown templates in the CLI parser. Use `:coerce :keyword` and `:validate` with the set of keys from `spectre.core/templates`. See `spec-test`.
 
 ## E5
 
 Complete `spectre.tui2`, built on [charm.clj](https://github.com/TimoKramer/charm.clj), a Bubble Tea-style TUI toolkit.
 See `spectre.tui` for a complete implementation of the same UI using JLine.
-Complete E3 before running `spectre.tui-test`, since its search and edit tests require the database functions.
+Complete E3 first. The seed task and TUI use its database functions.
 
-`test/spectre/tui2_test.clj` drives `tui2/update-fn` and `tui2/view` directly, so you can make all of it pass without ever running the TUI. Get there first with `bb test --nses spectre.tui2-test`, then use the REPL workflow below to see it live.
+Add example sites for searching and editing:
+
+```sh
+bb db:seed
+```
+
+The task adds missing entries for `google.com`, `mail.google.com` and `example.org`
+to `SPECTRE_DB` or the default database. Existing settings stay unchanged.
+
+Run the REPL smoke test below before filling in the TODOs.
+Then use `bb test --nses spectre.tui2-test --excludes :optional` while you work.
+The tests call `tui2/update-fn` and `tui2/view` directly. They do not require seeding.
 
 TODOs in `src/spectre/tui2.clj`:
 
 - `matches`: filter `sites` to those containing `query`, case-insensitively, ranked by where the query appears in the name: a hit at the start comes before a hit further along (see `search-test`, which also asks you to add one assertion of your own on `matches`).
-- `open-selected`: when `enter` is pressed on the search screen, switch `:mode` to `:edit`, record the selected `:site`, and load its `:draft` settings from `db/site-settings` when the site is already in `db.edn`, falling back to `defaults` for a new one (see `edit-test`).
+- `open-selected`: on Enter, set `:mode` to `:edit` and `:site` to the selected site. Set `:draft` to `defaults` merged with `db/site-settings`. With no selection, leave the state unchanged. See `edit-test`.
 - `cycle-value`: step to the next or previous value in `values`, wrapping around at either end. A value that is not in `values` starts at the first one (see `cycle-value-test`).
 - `adjust`: use `cycle-value` for fields that declare `:values` (`template`, `variant`); for `:counter`, increment or decrement, never going below 1.
 - `figure` (optional, for whoever is done early): the identicon (`spectre.identicon/identicon-of`) for whatever is currently typed into `:name-input`/`:master-input` on the identity screen, or `nil` while either is still empty.
   `figure-test` checks it updates live as you type and that the search screen picks up the same figure once it exists.
+
+Run the optional `figure-test` with
+`bb test --nses spectre.tui2-test` when you complete `figure`.
+Use `bb test --excludes :optional` to check all required exercises.
+
+After completing the TODOs, select a site, change its counter and press Enter to save.
+Reopen it to check the saved value. Use the CLI or `bb db:seed` to add sites.
 
 ### Change the TUI while it runs
 
@@ -126,11 +146,11 @@ Do this smoke test before you write any code:
 
 1. Start the TUI with `bb tui2 --nrepl`.
 1. Connect your editor to port 1667.
-1. Open `src/spectre/tui2.clj`. In `search-view`, change the text `"no sites in db.edn yet"` to `"REPL WORKS"`. Then evaluate the whole `search-view` form.
-1. Press a key in the TUI. The line below the search prompt shows the new text. The rest of the screen does not change.
+1. Open `src/spectre/tui2.clj`. In `search-view`, insert `"REPL WORKS\n"` as the first argument of the outer `str` call. Then evaluate the whole `search-view` form.
+1. Press a key in the TUI. The new text appears above the search prompt.
 1. Undo the change. Then evaluate the form again.
 
-If the text does not appear, your editor is connected to another process.
+If the text does not appear, check that evaluation succeeded and your editor is connected to port 1667.
 
 Notes:
 
@@ -179,6 +199,9 @@ Run the CLI from another directory using each of these methods.
   ```sh
   bbin install .
   ```
+
+  On macOS or Linux, check with `command -v pw` that the bbin launcher is on PATH
+  before the manual launcher.
 
   Test with `pw --help` and `pw example.com` from another directory.
 

@@ -1,6 +1,6 @@
 # Babashka Workshop - Spectre
 
-This workshop uses Babashka to build a password manager CLI with:
+Build a password manager with Babashka:
 
 - The stateless [Spectre password algorithm](https://spectre.app/). See the [algorithm description](https://spectre.app/spectre-algorithm.pdf).
 - Local storage for site settings, with a terminal UI for editing them.
@@ -12,11 +12,12 @@ This workshop uses Babashka to build a password manager CLI with:
 Install the following:
 
 - [Babashka](https://github.com/babashka/babashka#installation), with FFI support if you want to use the libsodium implementation (>= 1.13.220).
-  - Make sure to set up completions with:
+  - Set up zsh completions with:
     `source <(bb org.babashka.cli/completions snippet --shell zsh --prog bb)`.
-    See https://github.com/babashka/cli#completions for your specific shell.
-- Java 22 or later (17 works fine, but 22 is needed for FFI).
+    See https://github.com/babashka/cli#completions for other shells.
+- Java 17 or later. FFI requires Java 22 or later.
 - [Clojure CLI](https://clojure.org/guides/install_clojure) (optional).
+- [bbin](https://github.com/babashka/bbin#installation) for E6.
 - OpenSSL 3 or later, unless you use the FFI implementation.
 - [libsodium](https://libsodium.gitbook.io/doc/installation) for the FFI implementation
 
