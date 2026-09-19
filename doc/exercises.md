@@ -79,7 +79,7 @@ TODOs, make `test/spectre/db_test.clj` pass:
 bb test --nses spectre.db-test
 ```
 
-- `load-db`: when `path` exists, read it and `edn/read-string` it. Use `babashka.fs/exists?` to check first. Return `{:sites {}}` when the file is missing.
+- `load-db`: when `path` exists, read it and `edn/read-string` it. Use `babashka.fs/exists?` to check first.
 - `save-db!`: create the parent directory of `path` with `fs/create-dirs`, then write `db` back to `path` as EDN.
 - `site-settings`: look up one site's settings map in `db`, or `nil` when it is not there yet.
 - `merge-site!`: merge `settings` into the existing entry for `site` (so a partial update, e.g. just a new `:counter`, does not wipe the other keys), save the result with `save-db!`, and return the updated db.
