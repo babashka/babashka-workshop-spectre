@@ -23,5 +23,5 @@
        :exec-fn spectre.tui/browse}
   tui2 {:doc "Same as tui, built on charm.clj"
         :exec-fn spectre.tui2/browse}
-  db:seed {:doc "Add missing example sites to the configured database"
+  db:seed {:doc "Add example sites to db.edn"
            :exec-fn spectre.seed/seed!}}}

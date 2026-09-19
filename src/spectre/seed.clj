@@ -7,7 +7,7 @@
    "example.org" {:counter 1 :template :pin :variant :password}})
 
 (defn seed!
-  "Add missing example sites to the configured database. Preserve existing entries."
+  "Adds missing example sites and returns the database. Leaves existing entries unchanged."
   [opts]
   (let [current (db/load-db opts)
         seeded (update current :sites #(merge sites %))]
