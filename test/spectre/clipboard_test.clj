@@ -2,6 +2,7 @@
   (:require
    [babashka.fs :as fs]
    [babashka.process :as p]
+   [borkdude.deflet :as d]
    [clojure.string :as str]
    [clojure.test :refer [deftest is testing]]
    [spectre.clipboard :as clipboard]))
@@ -9,9 +10,10 @@
 ;; TODO: passes once spectre.clipboard/copy! sends the value over stdin
 (deftest copy-test
   (testing "the value is passed over stdin"
-    (let [f (fs/create-temp-file {:suffix ".clip"})
-          bb (or (System/getenv "BABASHKA_BINARY") "bb")
-          fake [bb "-e" (str "(spit " (pr-str (str f)) " (slurp *in*))")]]
+    (d/deflet
+      (def f (fs/create-temp-file {:suffix ".clip"}))
+      (def bb (or (System/getenv "BABASHKA_BINARY") "bb"))
+      (def fake [bb "-e" (str "(spit " (pr-str (str f)) " (slurp *in*))")])
       (try
         (is (some? (clipboard/copy! "SECRET" fake)))
         (is (= "SECRET" (slurp (str f))))
@@ -40,12 +42,14 @@
 
 (deftest ^:clipboard real-clipboard-test
   (when (System/getenv "SPECTRE_CLIPBOARD_TEST")
-    (let [copy (clipboard/tool)
-          paste (paste-cmd)]
+    (d/deflet
+      (def copy (clipboard/tool))
+      (def paste (paste-cmd))
       (is (some? copy) "a clipboard tool is available")
       (is (some? paste) "a paste command is available to check with")
       (when (and copy paste)
-        (let [previous (pasted paste)]
+        (d/deflet
+          (def previous (pasted paste))
           (try
             (testing "the value reaches the system clipboard unchanged"
               (clipboard/copy! "spectre-test-value")

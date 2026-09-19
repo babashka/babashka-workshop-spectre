@@ -70,7 +70,8 @@
 
 ;; TODO: passes once spectre.tui2/cycle-value steps through the values
 (deftest cycle-value-test
-  (let [values [:a :b :c]]
+  (d/deflet
+    (def values [:a :b :c])
     (testing "the next and the previous value"
       (is (= :b (tui2/cycle-value values :a :next)))
       (is (= :a (tui2/cycle-value values :b :prev))))
@@ -94,8 +95,9 @@
 ;; TODO, optional: passes once spectre.tui2/figure gives the identicon for the
 ;; name and master password on the identity screen
 (deftest figure-test
-  (let [s (-> (tui2/state db {}) (press :tab) (type-in "JohnDoe") (press :down) (type-in "hunter2"))
-        expected (identicon/identicon-of "JohnDoe" "hunter2")]
+  (d/deflet
+    (def s (-> (tui2/state db {}) (press :tab) (type-in "JohnDoe") (press :down) (type-in "hunter2")))
+    (def expected (identicon/identicon-of "JohnDoe" "hunter2"))
     (testing "the figure follows what is typed on the identity screen"
       (is (str/includes? (tui2/view s) expected)))
     (testing "and the search screen shows the same one"

@@ -1,5 +1,6 @@
 (ns spectre.tui-test
   (:require
+   [borkdude.deflet :as d]
    [clojure.test :refer [deftest is testing]]
    [spectre.tui :as tui]))
 
@@ -12,8 +13,9 @@
   (#'tui/refresh (merge {:db db :query "" :cursor 0 :mode :search} (apply hash-map kvs))))
 
 (deftest matches-test
-  (let [sites ["example.org" "google.com" "mail.google.com"]
-        matches #'tui/matches]
+  (d/deflet
+    (def sites ["example.org" "google.com" "mail.google.com"])
+    (def matches #'tui/matches)
     (is (= sites (matches sites "")))
     (is (= ["google.com" "mail.google.com"] (matches sites "google")))
     (testing "prefix matches come first"
@@ -23,9 +25,10 @@
     (is (= [] (matches sites "nope")))))
 
 (deftest decode-test
-  (let [decode #'tui/decode
-        seq-peek (fn [& codes] (let [left (atom codes)]
-                                 (fn [] (or (first (first (swap-vals! left rest))) -2))))]
+  (d/deflet
+    (def decode #'tui/decode)
+    (def seq-peek (fn [& codes] (let [left (atom codes)]
+                                  (fn [] (or (first (first (swap-vals! left rest))) -2)))))
     (is (= \a (decode (int \a) (seq-peek))))
     (is (= :enter (decode 13 (seq-peek))))
     (is (= :backspace (decode 127 (seq-peek))))
@@ -38,28 +41,32 @@
       (is (= :escape (decode 27 (seq-peek)))))))
 
 (deftest search-test
-  (let [k #'tui/search-key]
+  (d/deflet
+    (def k #'tui/search-key)
     (testing "typing filters, backspace widens again"
-      (let [s (-> (state) (k \g) (k \o))]
-        (is (= "go" (:query s)))
-        (is (= ["google.com" "mail.google.com"] (:hits s)))
-        (is (= 3 (count (:hits (k s :backspace)))))))
+      (d/deflet
+        (def typed (-> (state) (k \g) (k \o)))
+        (is (= "go" (:query typed)))
+        (is (= ["google.com" "mail.google.com"] (:hits typed)))
+        (is (= 3 (count (:hits (k typed :backspace)))))))
     (testing "the cursor stays inside the hit list"
       (is (= 2 (:cursor (-> (state) (k :down) (k :down) (k :down)))))
       (is (= 0 (:cursor (-> (state) (k :up)))))
       (is (= 1 (:cursor (-> (state :cursor 2) (k \g) (k \o) (k \o))))))
     (testing "enter opens the selected site with its stored settings"
-      (let [s (-> (state) (k \m) (k :enter))]
-        (is (= :edit (:mode s)))
-        (is (= "mail.google.com" (:site s)))
-        (is (= {:counter 2 :template :long :variant :login} (:draft s)))))
+      (d/deflet
+        (def opened (-> (state) (k \m) (k :enter)))
+        (is (= :edit (:mode opened)))
+        (is (= "mail.google.com" (:site opened)))
+        (is (= {:counter 2 :template :long :variant :login} (:draft opened)))))
     (testing "enter on an empty hit list does nothing"
       (is (= :search (:mode (-> (state) (k \z) (k :enter))))))
     (is (:done (k (state) :escape)))))
 
 (deftest edit-test
-  (let [k #'tui/edit-key
-        editing (-> (state) (#'tui/search-key \g) (#'tui/search-key :enter))]
+  (d/deflet
+    (def k #'tui/edit-key)
+    (def editing (-> (state) (#'tui/search-key \g) (#'tui/search-key :enter)))
     (testing "left and right change the selected field"
       (is (= 2 (:counter (:draft (k editing :right)))))
       (is (= :long (:template (:draft (-> editing (k :down) (k :right)))))))
