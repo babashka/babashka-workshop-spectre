@@ -62,7 +62,7 @@ SPECTRE_CLIPBOARD_TEST=1 bb test --nses spectre.clipboard-test
 
 ## E3
 
-`src/spectre/db.clj` stores per-site settings (`:counter`, `:template`, `:variant`) in a flat EDN file, shaped like:
+`src/spectre/db.clj` stores per-site settings (`:counter`, `:template`, `:variant`) in an EDN file, shaped like:
 
 ```clojure
 {:sites {"example.com" {:counter 1 :template :long :variant :password}}}
@@ -70,25 +70,29 @@ SPECTRE_CLIPBOARD_TEST=1 bb test --nses spectre.clipboard-test
 
 `default-path` is `~/.config/spectre/db.edn`. Set `SPECTRE_DB` to override it.
 
-Four functions to write:
+TODOs, make `test/spectre/db_test.clj` pass:
 
-- `load-db`: read `path` and `edn/read-string` it, or return an empty db (`{}`) when the file does not exist yet. Use `babashka.fs/exists?` to check first.
+```
+bb test --nses spectre.db-test
+```
+
+- `load-db`: when `path` exists, read it and `edn/read-string` it. Use `babashka.fs/exists?` to check first.
 - `save-db!`: create the parent directory of `path` with `fs/create-dirs`, then write `db` back to `path` as EDN.
 - `site-settings`: look up one site's settings map in `db`, or `nil` when it is not there yet.
 - `merge-site!`: merge `settings` into the existing entry for `site` (so a partial update, e.g. just a new `:counter`, does not wipe the other keys), save the result with `save-db!`, and return the updated db.
 
-Check this exercise with `bb test --nses spectre.tui-test`. `spectre.cli-test` and `spectre.tui2-test` also use these functions, but they need E4 and E5 first.
-
 ## E4
 
-`src/spectre/cli.clj` wires `spectre.core`, `spectre.clipboard`, `spectre.db` and `spectre.identicon` into the `pw` command. Four TODOs, make `test/spectre/cli_test.clj` pass:
+`src/spectre/cli.clj` wires `spectre.core`, `spectre.clipboard`, `spectre.db` and `spectre.identicon` into the `pw` command.
+
+TODOs, make `test/spectre/cli_test.clj` pass:
 
 ```
 bb test --nses spectre.cli-test
 ```
 
 - `known-sites`: the sorted list of sites already in `db.edn`, for CLI completion. Load the db (via `spectre.db/load-db`) and pull the keys out of `:sites`.
-- `spec`: currently only declares `:site` and `:print`. Add `:name`, `:counter`, `:template` and `:variant`, matching what `spec-test` expects:
+- The CLI `spec`: currently only declares `:site` and `:print`. Add `:name`, `:counter`, `:template` and `:variant`, matching what `spec-test` expects:
   every flag needs a single-letter `:alias` (`-u`, `-c`, `-t`, `-v`) and coerces to the right type (`:counter` to a number, `:template` and `:variant` to keywords).
   For the `:site` positional, wire `known-sites` in as the spec entry's `:complete-fn`.
 - `site-opts`: currently just merges `defaults` with the explicit flags, ignoring the db entirely.
@@ -108,7 +112,7 @@ TODOs in `src/spectre/tui2.clj`:
 
 - `matches`: filter `sites` to those containing `query`, case-insensitively, ranked by where the query appears in the name: a hit at the start comes before a hit further along (see `search-test`).
 - `open-selected`: when `enter` is pressed on the search screen, switch `:mode` to `:edit`, record the selected `:site`, and load its `:draft` settings from `db/site-settings` when the site is already in `db.edn`, falling back to `defaults` for a new one (see `edit-test`).
-- `cycle-value`: step to the next or previous value in `values`, wrapping around at either end.
+- `cycle-value`: step to the next or previous value in `values`, wrapping around at either end. A value that is not in `values` starts at the first one (see `cycle-value-test`).
 - `adjust`: use `cycle-value` for fields that declare `:values` (`template`, `variant`); for `:counter`, increment or decrement, never going below 1.
 - `figure` (optional, for whoever is done early): the identicon (`spectre.identicon/identicon-of`) for whatever is currently typed into `:name-input`/`:master-input` on the identity screen, or `nil` while either is still empty.
   `figure-test` checks it updates live as you type and that the search screen picks up the same figure once it exists.
@@ -177,3 +181,7 @@ Run the CLI from another directory using each of these methods.
   ```
 
   Test with `pw --help` and `pw example.com` from another directory.
+
+## E7 Optional open-ended exercises
+
+- Switch the db to sqlite using [babashka.sqlite](https://github.com/babashka/babashka.sqlite)

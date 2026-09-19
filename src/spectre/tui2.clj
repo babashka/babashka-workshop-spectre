@@ -59,7 +59,7 @@
   {:site site
    :title (format "%-30s %s" site (settings-summary (merge defaults (db/site-settings db site))))})
 
-(defn- matches
+(defn matches
   "Sites containing `query`, case insensitively. Prefix matches come first."
   [sites query]
   sites) ;; TODO
@@ -121,7 +121,14 @@
 (defn- open-selected
   "Open the selected site and load its settings into the draft."
   [state]
-  state) ;; TODO
+  (if-let [site (:site (item-list/selected-item (:list state)))]
+    (assoc state
+           :mode :edit
+           :site site
+           :field 0
+           ;; TODO: merge with the stored settings for this site, if any, to prefill the draft
+           :draft defaults)
+    state))
 
 (defn- update-search [state m]
   (cond
@@ -144,7 +151,7 @@
     (let [[input cmd] (text-input/text-input-update (:input state) m)]
       [(refresh (assoc state :input input)) cmd])))
 
-(defn- cycle-value
+(defn cycle-value
   "The next or previous value for a field, wrapping around."
   [values v dir]
   v) ;; TODO
@@ -274,4 +281,7 @@
                 ;; message, so redefining one lands on the next keystroke
                 :update #'update-fn
                 :view #'view
-                :alt-screen true}))
+                :alt-screen true})
+  (when nrepl
+    ;; the nREPL threads are not daemons, so the process would hang here
+    (System/exit 0)))

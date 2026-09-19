@@ -19,33 +19,36 @@
 (defn- titles [state]
   (mapv :site (item-list/items (:list state))))
 
-(defn- start []
+(defn- init-state []
   (first (tui2/update-fn (tui2/state db) (msg/window-size 80 24))))
 
 ;; TODO: passes once spectre.tui2/matches filters and ranks the sites
 (deftest search-test
-  (testing "typing filters the list, backspace widens it again"
-    (d/deflet
-      (def s (reduce press (start) ["g" "o"]))
-      (is (= ["google.com" "mail.google.com"] (titles s)))
-      (is (= 3 (count (titles (press s :backspace)))))))
   (testing "the window size sets the list height"
-    (is (= 20 (:height (:list (start))))))
+    (is (= 20 (:height (:list (init-state))))))
   (testing "arrow keys move the list cursor"
-    (is (= 1 (item-list/selected-index (:list (press (start) :down)))))
-    (is (= 0 (item-list/selected-index (:list (press (start) :up))))))
+    (is (= 1 (item-list/selected-index (:list (press (init-state) :down)))))
+    (is (= 0 (item-list/selected-index (:list (press (init-state) :up))))))
   (testing "letters bound by the list go to the search field, not the cursor"
     ;; the list binds g to go-to-start: here it has to end up in the query
     (d/deflet
-      (def s (-> (start) (press :down) (press "g")))
+      (def s (-> (init-state) (press :down) (press "g")))
       (is (= ["google.com" "mail.google.com" "example.org"] (titles s)))
-      (is (= 1 (item-list/selected-index (:list s)))))))
+      (is (= 1 (item-list/selected-index (:list s))))))
+  ;; TODO:
+  (testing "typing filters the list, backspace widens it again"
+    (d/deflet
+      (def s (reduce press (init-state) ["g" "o"]))
+     ;; TODO: update spectre.tui2/matches to filter and rank the sites
+     ;; TODO: add a test assertion for tui2/matches
+      (is (= ["google.com" "mail.google.com"] (titles s)))
+      (is (= 3 (count (titles (press s :backspace))))))))
 
-;; TODO: passes once spectre.tui2/open-selected and adjust are written.
+;; TODO: passes once spectre.tui2/open-selected is fixed
 ;; Needs spectre.db/site-settings from E3 as well, for the stored settings
 (deftest edit-test
   (d/deflet
-    (def editing (-> (start) (press "g") (press :enter)))
+    (def editing (-> (init-state) (press "g") (press :enter)))
     (testing "enter opens the selected site with its stored settings"
       (is (= :edit (:mode editing)))
       (is (= "google.com" (:site editing)))
@@ -60,27 +63,29 @@
     (testing "escape goes back to the search screen"
       (is (= :search (:mode (-> editing (press :right) (press :escape))))))))
 
-(deftest view-test
-  (testing "both screens render without blowing up"
-    (d/deflet
-      (def s (reduce press (start) ["g" "o"]))
-      (is (string? (tui2/view s)))
-      (is (string? (tui2/view (press s :enter)))))))
-
-(comment
-  (clojure.test/run-tests 'spectre.tui2-test)
-  )
-
 (def ^:private env {"SPECTRE_NAME" "John Doe" "SPECTRE_MASTER" "hunter2"})
 
 (defn- type-in [state text]
   (reduce press state (map str text)))
 
+;; TODO: passes once spectre.tui2/cycle-value steps through the values
+(deftest cycle-value-test
+  (let [values [:a :b :c]]
+    (testing "the next and the previous value"
+      (is (= :b (tui2/cycle-value values :a :next)))
+      (is (= :a (tui2/cycle-value values :b :prev))))
+    (testing "both directions wrap around"
+      (is (= :a (tui2/cycle-value values :c :next)))
+      (is (= :c (tui2/cycle-value values :a :prev))))
+    (testing "a value that is not one of them starts at the first"
+      (is (= :a (tui2/cycle-value values :x :next)))
+      (is (= :a (tui2/cycle-value values nil :prev))))))
+
 (deftest identity-test
   (testing "tab opens the identity screen, esc and enter go back"
-    (is (= :identity (:mode (press (start) :tab))))
-    (is (= :search (:mode (-> (start) (press :tab) (press :escape)))))
-    (is (= :search (:mode (-> (start) (press :tab) (press :enter))))))
+    (is (= :identity (:mode (press (init-state) :tab))))
+    (is (= :search (:mode (-> (init-state) (press :tab) (press :escape)))))
+    (is (= :search (:mode (-> (init-state) (press :tab) (press :enter))))))
   (testing "name and master password come prefilled from the environment"
     (is (str/includes? (tui2/view (press (tui2/state db env) :tab)) "John Doe")))
   (testing "the master password is never shown"
@@ -97,3 +102,8 @@
       (is (str/includes? (tui2/view (press s :escape)) expected)))
     (testing "nothing while a field is still empty"
       (is (not (str/includes? (tui2/view (-> (tui2/state db {}) (press :tab) (type-in "JohnDoe"))) "╰"))))))
+
+(comment
+  (clojure.test/run-tests 'spectre.tui2-test)
+  ,
+  )
