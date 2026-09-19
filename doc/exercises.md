@@ -182,6 +182,7 @@ Run the CLI from another directory using each of these methods.
 
   Test with `pw --help` and `pw example.com` from another directory.
 
-## E7 Optional open-ended exercises
+## Optional open-ended exercises
 
 - Switch the db to sqlite using [babashka.sqlite](https://github.com/babashka/babashka.sqlite)
+- Make the tests run on Github Actions using [setup-clojure](https://github.com/DeLaGuardo/setup-clojure)
