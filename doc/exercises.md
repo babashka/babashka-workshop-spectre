@@ -36,7 +36,7 @@ Read through `src/spectre/core.clj` before doing anything else, it is the founda
 - Bump `:counter` and check you get a different password again.
 - Check that two calls with the same arguments return the same password.
 
-There is also `spectre.scrypt-ffi`, an alternative to `spectre.scrypt` that calls into libsodium directly via Babashka's FFI support instead of shelling out to the `openssl` binary. It is not wired in by default (`core.clj` requires `spectre.scrypt`, with the FFI require commented out below it). If you have libsodium installed and a Babashka build with FFI support, try swapping the two requires in `core.clj` and confirming the same tests still pass, i.e. the two scrypt implementations agree byte-for-byte. Each namespace also has its own `comment` block with a known input/output pair you can check directly at the REPL.
+There is also `spectre.scrypt-ffi`, an alternative to `spectre.scrypt` that calls into libsodium directly via Babashka's FFI support instead of shelling out to the `openssl` binary. It is not wired in by default (`core.clj` requires `spectre.scrypt`, with the FFI require commented out below it). If you have libsodium installed and a Babashka build with FFI support, try swapping the two requires in `core.clj` and confirming the same tests still pass. Each namespace also has its own `comment` block with a known input/output pair you can check directly at the REPL.
 
 Run just this namespace while you work with `bb test --nses spectre.core-test`.
 
@@ -105,7 +105,7 @@ bb test --nses spectre.cli-test
 ## E5
 
 Complete `spectre.tui2`, built on [charm.clj](https://github.com/TimoKramer/charm.clj), a Bubble Tea-style TUI toolkit.
-See `spectre.tui` for a complete implementation of the same UI using JLine.
+See `spectre.tui` for a comparable implementation of the TUI using JLine.
 Complete E3 first. The seed task and TUI use its database functions.
 
 Add example sites for searching and editing:
