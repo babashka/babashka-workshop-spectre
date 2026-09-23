@@ -208,4 +208,6 @@ Run the CLI from another directory using each of these methods.
 ## Optional open-ended exercises
 
 - Switch the db to sqlite using [babashka.sqlite](https://github.com/babashka/babashka.sqlite)
+- Also save the Full Name in the db to reduce one more input during password creation, override that via CLI params
 - Make the tests run on Github Actions using [setup-clojure](https://github.com/DeLaGuardo/setup-clojure)
+- Use [Argon2](https://en.wikipedia.org/wiki/Argon2) in place of scrypt to come up with your own Spectre (v4?) to use more modern KDF functions
