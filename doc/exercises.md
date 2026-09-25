@@ -210,4 +210,5 @@ Run the CLI from another directory using each of these methods.
 - Switch the db to sqlite using [babashka.sqlite](https://github.com/babashka/babashka.sqlite)
 - Also save the Full Name in the db to reduce one more input during password creation, override that via CLI params
 - Make the tests run on Github Actions using [setup-clojure](https://github.com/DeLaGuardo/setup-clojure)
+- Needing to enter the same main password repeatedly becomes a bother if used frequently, think of a way if it can be (securely) cached? (Hint: the 64 byte master key looks interesting)
 - Use [Argon2](https://en.wikipedia.org/wiki/Argon2) in place of scrypt to come up with your own Spectre (v4?) to use more modern KDF functions

@@ -4,8 +4,7 @@
   (:require
    [clojure.string :as str]
    [spectre.scrypt :as scrypt]
-   ; [spectre.scrypt-ffi :as scrypt]
-   )
+   #_[spectre.scrypt-ffi :as scrypt])
   (:import
    [java.io ByteArrayOutputStream]
    [java.nio ByteBuffer]

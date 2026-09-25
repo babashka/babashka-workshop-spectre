@@ -106,6 +106,4 @@
       (is (not (str/includes? (tui2/view (-> (tui2/state db {}) (press :tab) (type-in "JohnDoe"))) "╰"))))))
 
 (comment
-  (clojure.test/run-tests 'spectre.tui2-test)
-  ,
-  )
+  (clojure.test/run-tests 'spectre.tui2-test))
