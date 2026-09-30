@@ -12,16 +12,25 @@
 
 (defn load-db
   ([] (load-db {}))
-  ([{:keys [path] :or {path default-path}}])) ;; TODO
+  ([{:keys [path] :or {path default-path}}]
+   (if (fs/exists? path)
+     (edn/read-string (slurp path))
+     {})))
 
 (defn save-db!
   ([db] (save-db! db {}))
-  ([db {:keys [path] :or {path default-path}}])) ;; TODO
+  ([db {:keys [path] :or {path default-path}}]
+   (fs/create-dirs (fs/parent path))
+   (spit path (with-out-str (pp/pprint db)))))
 
 (defn site-settings
-  [db site]) ;; TODO
+  [db site]
+  (get-in db [:sites site]))
 
 (defn merge-site!
   "Merge settings into the site entry and save. Returns the updated db."
   ([db site settings] (merge-site! db site settings {}))
-  ([db site settings opts])) ;; TODO
+  ([db site settings opts]
+   (let [db (update-in db [:sites site] merge settings)]
+     (save-db! db opts)
+     db)))
