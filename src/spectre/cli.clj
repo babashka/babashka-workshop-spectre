@@ -11,17 +11,21 @@
 
 (defn- known-sites
   "Sites in db.edn."
-  [_]) ;; TODO
+  [_]
+  (sort (keys (:sites (db/load-db)))))
 
 (def spec
   {:site {:desc "Site to derive a password for"
           :require true
           :positional true
-          ;; TODO: offer the known sites for completion
-          }
+          :complete-fn known-sites}
    :print {:desc "Print to stdout instead of copying to the clipboard" :coerce :boolean :alias :p}
-   ;; TODO: :name, :counter, :template and :variant
-   })
+   :name {:desc "Your full name (or SPECTRE_NAME)" :alias :u :complete false}
+   :counter {:desc "Site counter" :coerce :long :alias :c :complete false}
+   :template {:desc "Password template" :coerce :keyword :alias :t
+              :enum (vec (keys spectre/templates))}
+   :variant {:desc "What to derive" :coerce :keyword :alias :v
+             :enum (vec (keys spectre/scope))}})
 
 (defn- warn [& xs]
   (binding [*out* *err*]
@@ -32,9 +36,18 @@
    override. When the effective settings differ from the db, warn and save."
   ([site explicit] (site-opts site explicit {}))
   ([site explicit db-opts]
-   ;; TODO: read db.edn, let a stored setting win over the default, and warn
-   ;; and save when a flag differs from what is stored
-   (merge defaults explicit)))
+   (let [dbv (db/load-db db-opts)
+         stored (db/site-settings dbv site)
+         effective (merge defaults stored explicit)]
+     (if stored
+       (doseq [[k v] effective
+               :when (and (contains? stored k) (not= v (get stored k)))]
+         (warn (str "db.edn has " k " " (get stored k) " for " site
+                    ", using and saving " v)))
+       (warn (str "Saving " site " to db.edn: " effective)))
+     (when (not= effective stored)
+       (db/merge-site! dbv site effective db-opts))
+     effective)))
 
 (defn generate
   "Derive a site password.
