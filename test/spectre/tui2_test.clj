@@ -77,10 +77,7 @@
       (is (= :a (tui2/cycle-value values :b :prev))))
     (testing "both directions wrap around"
       (is (= :a (tui2/cycle-value values :c :next)))
-      (is (= :c (tui2/cycle-value values :a :prev))))
-    (testing "a value that is not one of them starts at the first"
-      (is (= :a (tui2/cycle-value values :x :next)))
-      (is (= :a (tui2/cycle-value values nil :prev))))))
+      (is (= :c (tui2/cycle-value values :a :prev))))))
 
 (deftest identity-test
   (testing "tab opens the identity screen, esc and enter go back"

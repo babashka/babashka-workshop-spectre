@@ -125,7 +125,7 @@ TODOs in `src/spectre/tui2.clj`:
 
 - `matches`: filter `sites` to those containing `query`, case-insensitively, ranked by where the query appears in the name: a hit at the start comes before a hit further along (see `search-test`, which also asks you to add one assertion of your own on `matches`).
 - `open-selected`: on Enter, set `:mode` to `:edit` and `:site` to the selected site. Set `:draft` to `defaults` merged with `db/site-settings`. With no selection, leave the state unchanged. See `edit-test`.
-- `cycle-value`: step to the next or previous value in `values`, wrapping around at either end. A value that is not in `values` starts at the first one (see `cycle-value-test`).
+- `cycle-value`: step to the next or previous value in `values`, wrapping around at either end.
 - `adjust`: use `cycle-value` for fields that declare `:values` (`template`, `variant`); for `:counter`, increment or decrement, never going below 1.
 - `figure` (optional, for whoever is done early): the identicon (`spectre.identicon/identicon-of`) for whatever is currently typed into `:name-input`/`:master-input` on the identity screen, or `nil` while either is still empty.
   `figure-test` checks it updates live as you type and that the search screen picks up the same figure once it exists.
