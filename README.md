@@ -11,7 +11,7 @@ Build a password manager with Babashka:
 
 Install the following:
 
-- [Babashka](https://github.com/babashka/babashka#installation), with FFI support if you want to use the libsodium implementation (>= 1.13.220).
+- [Babashka](https://github.com/babashka/babashka#installation), with FFI support if you want to use the libsodium implementation (>= 1.13.220, latest recommended).
   - Set up zsh completions with:
     `source <(bb org.babashka.cli/completions snippet --shell zsh --prog bb)`.
     See https://github.com/babashka/cli#completions for other shells.
