@@ -62,7 +62,15 @@
 (defn matches
   "Sites containing `query`, case insensitively. Prefix matches come first."
   [sites query]
-  sites) ;; TODO
+  (if (str/blank? query)
+    sites
+    (let [q (str/lower-case query)]
+      (->> sites
+           (keep (fn [site]
+                   (when-let [i (str/index-of (str/lower-case site) q)]
+                     [i site])))
+           (sort)
+           (mapv second)))))
 
 (defn- entries [{:keys [db sites]} query]
   (mapv #(entry db %) (matches sites query)))
@@ -108,7 +116,10 @@
   "The identicon for the name and master password on the identity screen, nil
    while either is empty."
   [state]
-  nil) ;; TODO, optional: for whoever is done early
+  (let [full-name (text-input/value (:name-input state))
+        main-pass (text-input/value (:master-input state))]
+    (when (and (seq full-name) (seq main-pass))
+      (identicon/identicon-of full-name main-pass))))
 
 (defn init []
   [(state (db/load-db)) nil])
@@ -126,8 +137,7 @@
            :mode :edit
            :site site
            :field 0
-           ;; TODO: merge with the stored settings for this site, if any, to prefill the draft
-           :draft defaults)
+           :draft (merge defaults (db/site-settings (:db state) site)))
     state))
 
 (defn- update-search [state m]
@@ -154,13 +164,18 @@
 (defn cycle-value
   "The next or previous value for a field, wrapping around."
   [values v dir]
-  v) ;; TODO
+  (let [vs (cond-> values (= :prev dir) reverse)]
+    (if (some #{v} vs)
+      (second (drop-while #(not= v %) (cycle vs)))
+      (first values))))
 
 (defn- adjust
   "Step a field of the draft. A field with :values cycles through them, the
    counter counts, and never below 1."
   [draft {:keys [key values]} dir]
-  draft) ;; TODO
+  (if values
+    (update draft key #(cycle-value values % dir))
+    (update draft key #(max 1 ((if (= :prev dir) dec inc) (or % 1))))))
 
 (defn- update-edit [{:keys [site draft field] :as state} m]
   (cond
