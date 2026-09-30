@@ -117,13 +117,11 @@ bb db:seed
 The task adds missing entries for `google.com`, `mail.google.com` and `example.org`
 to `SPECTRE_DB` or the default database. Existing settings stay unchanged.
 
-Run the REPL smoke test below before filling in the TODOs.
-Then use `bb test --nses spectre.tui2-test --excludes :optional` while you work.
-The tests call `tui2/update-fn` and `tui2/view` directly. They do not require seeding.
+Use `bb test --nses spectre.tui2-test --excludes :optional` while you work.
 
 TODOs in `src/spectre/tui2.clj`:
 
-- `matches`: filter `sites` to those containing `query`, case-insensitively, ranked by where the query appears in the name: a hit at the start comes before a hit further along (see `search-test`, which also asks you to add one assertion of your own on `matches`).
+- `matches`: filter `sites` to those containing `query`, case-insensitively, ranked by where the query appears in the name: a hit at the start comes before a hit further along (see `search-test`, which also asks you to add one assertion for `matches`).
 - `open-selected`: on Enter, set `:mode` to `:edit` and `:site` to the selected site. Set `:draft` to `defaults` merged with `db/site-settings`. With no selection, leave the state unchanged. See `edit-test`.
 - `cycle-value`: step to the next or previous value in `values`, wrapping around at either end.
 - `adjust`: use `cycle-value` for fields that declare `:values` (`template`, `variant`); for `:counter`, increment or decrement, never going below 1.
