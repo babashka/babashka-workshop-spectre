@@ -13,13 +13,17 @@
 
 (defn tool
   "First available clipboard command, or nil."
-  []) ;; TODO
+  []
+  (some (fn [[exe :as cmd]] (when (fs/which exe) cmd)) tools))
 
 (defn copy!
   "Copy s to the clipboard with cmd, by default the first available tool.
    Returns the command used, or nil when there is none. The value goes over
    stdin, never argv."
   ([s] (copy! s (tool)))
-  ([s cmd])) ;; TODO
+  ([s cmd]
+   (when cmd
+     (apply p/shell {:in s} cmd)
+     cmd)))
 
-(comment (copy! "foo"))
+(comment (copy! "foo bar"))

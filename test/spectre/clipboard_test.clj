@@ -56,3 +56,8 @@
               (is (= "spectre-test-value" (pasted paste))))
             (finally
               (clipboard/copy! previous))))))))
+
+(comment
+  (clojure.test/run-tests 'spectre.clipboard-test)
+
+  (clojure.test/run-test spectre.clipboard-test/copy-test))
